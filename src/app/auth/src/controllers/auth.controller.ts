@@ -3,7 +3,7 @@ import { loginSchema, registerSchema } from "./auth.schema";
 import { User } from "../models/user.model";
 import { checkPassword, hashPassword } from "../lib/hash";
 import jwt from "jsonwebtoken";
-import { sendEmail } from "../lib/email";
+import { isEmailDeliveryConfigured, sendEmail } from "../lib/email";
 import {
     createAccessToken,
     createRefreshToken,
@@ -31,6 +31,94 @@ function getGoogleClient() {
         clientSecret,
         redirectUri,
     });
+}
+
+function isDevelopmentMode() {
+    return process.env.NODE_ENV !== "production";
+}
+
+function renderResetPasswordPage(token: string) {
+    return `<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Reset password</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f7f7f8;
+            color: #111827;
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+        .card {
+            width: 100%;
+            max-width: 420px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.08);
+        }
+        h1 {
+            margin: 0 0 8px;
+            font-size: 24px;
+        }
+        p {
+            margin: 0 0 16px;
+            color: #4b5563;
+        }
+        label {
+            display: block;
+            margin: 12px 0 6px;
+            font-weight: 600;
+        }
+        input {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 12px 14px;
+            border: 0;
+            border-radius: 10px;
+            background: #111827;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        small {
+            display: block;
+            margin-top: 12px;
+            color: #6b7280;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <main class="card">
+        <h1>Reset password</h1>
+        <p>Enter a new password to finish the reset flow.</p>
+        <form method="post" action="/auth/reset-password">
+            <input type="hidden" name="token" value="${token}" />
+            <label for="password">New password</label>
+            <input id="password" name="password" type="password" minlength="6" required />
+            <button type="submit">Update password</button>
+        </form>
+        <small>If you are using an API client, POST the token and password to /auth/reset-password.</small>
+    </main>
+</body>
+</html>`;
 }
 
 export async function registerHandler(req: Request, res: Response) {
@@ -66,6 +154,21 @@ export async function registerHandler(req: Request, res: Response) {
             twoFactorEnabled: false,
             name,
         });
+
+        if (!isEmailDeliveryConfigured() && isDevelopmentMode()) {
+            newlyCreatedUser.isEmailVerified = true;
+            await newlyCreatedUser.save();
+
+            return res.status(201).json({
+                message: "User registered and auto-verified for local development",
+                user: {
+                    id: newlyCreatedUser.id,
+                    email: newlyCreatedUser.email,
+                    role: newlyCreatedUser.role,
+                    isEmailVerified: newlyCreatedUser.isEmailVerified,
+                },
+            });
+        }
 
         // email verification part
 
@@ -347,6 +450,9 @@ export async function forgotPasswordHandler(req: Request, res: Response) {
         return res.json({
             message:
                 "If an account with this email exists, we will send you a reset link",
+            ...(isDevelopmentMode() && !isEmailDeliveryConfigured()
+                ? { resetUrl }
+                : {}),
         });
     } catch (e) {
         console.log(e);
@@ -357,10 +463,22 @@ export async function forgotPasswordHandler(req: Request, res: Response) {
     }
 }
 
+export async function resetPasswordPageHandler(req: Request, res: Response) {
+    const token = req.query.token as string | undefined;
+
+    if (!token) {
+        return res.status(400).send("Reset token is missing");
+    }
+
+    res.type("html").send(renderResetPasswordPage(token));
+}
+
 export async function resetPasswordHandler(req: Request, res: Response) {
     const { token, password } = req.body as { token?: string; password?: string };
 
-    if (!token) {
+    const requestToken = token ?? (req.query.token as string | undefined);
+
+    if (!requestToken) {
         return res.status(400).json({ message: "Reset token is missing" });
     }
 
@@ -371,7 +489,7 @@ export async function resetPasswordHandler(req: Request, res: Response) {
     }
 
     try {
-        const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+        const tokenHash = crypto.createHash("sha256").update(requestToken).digest("hex");
 
         const user = await User.findOne({
             resetPasswordToken: tokenHash,

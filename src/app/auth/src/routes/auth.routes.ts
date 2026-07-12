@@ -8,6 +8,7 @@ import {
     refreshHandler,
     registerHandler,
     resetPasswordHandler,
+    resetPasswordPageHandler,
     twoFASetuphandler,
     twoFAVerifyHandler,
     verifyEmailHandler,
@@ -22,6 +23,7 @@ router.get("/verify-email", verifyEmailHandler);
 router.post("/refresh", refreshHandler);
 router.post("/logout", logoutHandler);
 router.post("/forgot-password", forgotPasswordHandler);
+router.get("/reset-password", resetPasswordPageHandler);
 router.post("/reset-password", resetPasswordHandler);
 router.get("/google", googleAuthStartHandler);
 router.get("/google/callback", googleAuthCallbackHandler);
