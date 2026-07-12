@@ -9,7 +9,6 @@ import {
   Calendar, 
   Wrench, 
   ArrowLeftRight, 
-  Settings, 
   Menu, 
   X, 
   LogOut, 
@@ -17,7 +16,8 @@ import {
   User, 
   Clock,
   Database,
-  Layers
+  Layers,
+  ClipboardCheck
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
 
@@ -51,7 +51,7 @@ export default function DashboardLayout({
     { name: "Bookings & Schedules", href: "/dashboard/bookings", icon: <Calendar className="h-4 w-4" /> },
     { name: "Maintenance Logs", href: "/dashboard/maintenance", icon: <Wrench className="h-4 w-4" /> },
     { name: "Relocation/Transfers", href: "/dashboard/allocations", icon: <ArrowLeftRight className="h-4 w-4" /> },
-    { name: "System Settings", href: "#", icon: <Settings className="h-4 w-4" /> },
+    { name: "Audit Cycles", href: "/dashboard/audits", icon: <ClipboardCheck className="h-4 w-4" /> },
     { name: "Organization Setup", href: "/dashboard/organization", icon: <Layers className="h-4 w-4" /> },
   ];
 
