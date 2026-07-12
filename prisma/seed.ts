@@ -58,14 +58,15 @@ async function main() {
       name: "Musa Qureshi",
       email: "musaqureshi788code@gmail.com",
       passwordHash: PASS,
-      role: "ADMIN",
+      role: "EMPLOYEE",
       status: "ACTIVE",
-      designation: "System Administrator",
+      designation: "Senior Software Engineer",
       departmentId: deptOperations.id,
       emailVerifiedAt: new Date(),
     },
   });
 
+  const MUSKAN_PASS = await bcrypt.hash("Muskan@123", 10);
   const muskan = await prisma.user.upsert({
     where: { email: "kawadkarmuskan4@gmail.com" },
     update: {},
@@ -73,10 +74,10 @@ async function main() {
       employeeCode: "EMP-0002",
       name: "Muskan Kawadkar",
       email: "kawadkarmuskan4@gmail.com",
-      passwordHash: PASS,
-      role: "DEPARTMENT_HEAD",
+      passwordHash: MUSKAN_PASS,
+      role: "ADMIN",
       status: "ACTIVE",
-      designation: "Head of Engineering",
+      designation: "System Administrator",
       departmentId: deptEngineering.id,
       emailVerifiedAt: new Date(),
     },

@@ -34,75 +34,10 @@ function publicUser(user: {
 const LOCAL_ACCOUNTS = [
   {
     id: "local-admin-001",
-    email: "musaqureshi788code@gmail.com",
-    name: "Musa Qureshi",
-    role: "ADMIN" as DbUserRole,
-  },
-  {
-    id: "local-head-001",
     email: "kawadkarmuskan4@gmail.com",
     name: "Muskan Kawadkar",
-    role: "DEPARTMENT_HEAD" as DbUserRole,
-  },
-  {
-    id: "local-head-002",
-    email: "aarav.sharma@company.dev",
-    name: "Aarav Sharma",
-    role: "DEPARTMENT_HEAD" as DbUserRole,
-  },
-  {
-    id: "local-head-003",
-    email: "priya.mehta@company.dev",
-    name: "Priya Mehta",
-    role: "DEPARTMENT_HEAD" as DbUserRole,
-  },
-  {
-    id: "local-head-004",
-    email: "neha.singh@company.dev",
-    name: "Neha Singh",
-    role: "DEPARTMENT_HEAD" as DbUserRole,
-  },
-  {
-    id: "local-manager-001",
-    email: "rohan.patel@company.dev",
-    name: "Rohan Patel",
-    role: "ASSET_MANAGER" as DbUserRole,
-  },
-  {
-    id: "local-manager-002",
-    email: "ananya.verma@company.dev",
-    name: "Ananya Verma",
-    role: "ASSET_MANAGER" as DbUserRole,
-  },
-  {
-    id: "local-emp-001",
-    email: "arjun.gupta@company.dev",
-    name: "Arjun Gupta",
-    role: "EMPLOYEE" as DbUserRole,
-  },
-  {
-    id: "local-emp-002",
-    email: "kavya.nair@company.dev",
-    name: "Kavya Nair",
-    role: "EMPLOYEE" as DbUserRole,
-  },
-  {
-    id: "local-emp-003",
-    email: "aditya.joshi@company.dev",
-    name: "Aditya Joshi",
-    role: "EMPLOYEE" as DbUserRole,
-  },
-  {
-    id: "local-emp-004",
-    email: "sneha.kapoor@company.dev",
-    name: "Sneha Kapoor",
-    role: "EMPLOYEE" as DbUserRole,
-  },
-  {
-    id: "local-emp-005",
-    email: "rahul.iyer@company.dev",
-    name: "Rahul Iyer",
-    role: "EMPLOYEE" as DbUserRole,
+    role: "ADMIN" as DbUserRole,
+    password: "Muskan@123",
   },
 ];
 
@@ -157,11 +92,7 @@ export async function POST(request: Request) {
     } else {
       // Check local accounts fallback
       const localAccount = LOCAL_ACCOUNTS.find(acc => acc.email === email);
-      if (!localAccount) {
-        return NextResponse.json({ message: "Invalid email or password" }, { status: 401 });
-      }
-      // In bypass mode, accept any password that is at least 6 characters
-      if (password.length < 6) {
+      if (!localAccount || password !== localAccount.password) {
         return NextResponse.json({ message: "Invalid email or password" }, { status: 401 });
       }
       user = {
