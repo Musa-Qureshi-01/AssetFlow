@@ -1,14 +1,16 @@
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
-import type { UserRole } from "@prisma/client";
 
 export const AUTH_COOKIE_NAME = "assetflow_session";
 
-const roleToUi: Record<UserRole, "Admin" | "AssetManager" | "Head" | "Employee"> = {
-  ADMIN: "Admin",
-  ASSET_MANAGER: "AssetManager",
+// Prisma v7 exports enums differently — define locally to avoid import errors
+export type DbUserRole = "ADMIN" | "ASSET_MANAGER" | "DEPARTMENT_HEAD" | "EMPLOYEE";
+
+const roleToUi: Record<DbUserRole, "Admin" | "AssetManager" | "Head" | "Employee"> = {
+  ADMIN:           "Admin",
+  ASSET_MANAGER:   "AssetManager",
   DEPARTMENT_HEAD: "Head",
-  EMPLOYEE: "Employee",
+  EMPLOYEE:        "Employee",
 };
 
 export type SessionUser = {
@@ -23,12 +25,12 @@ type AuthTokenPayload = {
   sub: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: DbUserRole;
   emailVerified: boolean;
 };
 
 function authSecret() {
-  return process.env.JWT_ACCESS_SECRET || process.env.NEXTAUTH_SECRET || "assetflow-local-dev-secret";
+  return process.env.JWT_ACCESS_SECRET || "assetflow-local-dev-secret";
 }
 
 export function createSessionToken(input: AuthTokenPayload) {
@@ -42,10 +44,10 @@ export function verifySessionToken(token?: string): SessionUser | null {
     const payload = jwt.verify(token, authSecret()) as AuthTokenPayload;
 
     return {
-      id: payload.sub,
-      email: payload.email,
-      name: payload.name,
-      role: roleToUi[payload.role] ?? "Employee",
+      id:              payload.sub,
+      email:           payload.email,
+      name:            payload.name,
+      role:            roleToUi[payload.role] ?? "Employee",
       isEmailVerified: payload.emailVerified,
     };
   } catch {
@@ -60,10 +62,10 @@ export async function getSessionUser() {
 
 export function authCookieOptions() {
   return {
-    httpOnly: true,
-    sameSite: "lax" as const,
-    secure: process.env.NODE_ENV === "production",
-    path: "/",
-    maxAge: 60 * 60 * 24 * 7,
+    httpOnly:  true,
+    sameSite:  "lax" as const,
+    secure:    process.env.NODE_ENV === "production",
+    path:      "/",
+    maxAge:    60 * 60 * 24 * 7,
   };
 }

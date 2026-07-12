@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import type { UserRole } from "@prisma/client";
+import type { DbUserRole } from "@/lib/auth-session";
 import { prisma } from "@/lib/prisma";
 import {
   AUTH_COOKIE_NAME,
@@ -8,7 +8,7 @@ import {
   createSessionToken,
 } from "@/lib/auth-session";
 
-const roleToDb: Record<string, UserRole> = {
+const roleToDb: Record<string, DbUserRole> = {
   Admin: "ADMIN",
   AssetManager: "ASSET_MANAGER",
   Head: "DEPARTMENT_HEAD",
@@ -23,7 +23,7 @@ function publicUser(user: {
   id: string;
   email: string;
   name: string;
-  role: UserRole;
+  role: DbUserRole;
   emailVerifiedAt: Date | null;
 }) {
   return {
