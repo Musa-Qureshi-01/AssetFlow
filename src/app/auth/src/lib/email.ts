@@ -3,15 +3,15 @@ import type { Transporter } from "nodemailer";
 
 let transporter: Transporter | null = null;
 
+functexport function isEmailDeliveryConfigured() {
+    return Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
+}
+
 function getTransporter(): Transporter | null {
     if (transporter) return transporter;
 
-    if (
-        !process.env.SMTP_HOST ||
-        !process.env.SMTP_USER ||
-        !process.env.SMTP_PASS
-    ) {
-        console.warn("⚠ SMTP environment variables are not configured — emails will not be sent.");
+    if (!isEmailDeliveryConfigured()) {
+le.warn("⚠ SMTP environment variables are not configured — emails will not be sent.");
         return null;
     }
 

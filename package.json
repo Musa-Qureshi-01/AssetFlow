@@ -9,7 +9,10 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^6.19.3",
     "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "framer-motion": "^12.42.2",
     "google-auth-library": "^10.9.0",
@@ -18,6 +21,8 @@
     "mongoose": "^9.7.4",
     "next": "16.2.10",
     "otplib": "^13.4.1",
+    "pg": "^8.22.0",
+    "prisma": "^6.19.3",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

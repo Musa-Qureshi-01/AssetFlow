@@ -63,7 +63,7 @@ export default function ForgotPasswordPage() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3 }}
       >
-        <Card className="border-indigo-500/20 bg-indigo-500/[0.01]">
+        <Card className="border-indigo-500/20 bg-indigo-500/1">
           <CardHeader className="bg-indigo-500/5 pb-4 border-indigo-500/10 flex flex-row items-center justify-between">
             <span className="text-xs font-mono font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
               Token Dispatched
