@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Mail, ShieldAlert, Lock, CheckCircle, Info, Shield, ChevronDown } from "lucide-react";
+import { User, Mail, ShieldAlert, Lock, CheckCircle, Info } from "lucide-react";
 import { motion } from "framer-motion";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
@@ -15,7 +15,7 @@ export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [employeeId, setEmployeeId] = useState("");
-  const [role, setRole] = useState("Employee");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   
@@ -76,7 +76,7 @@ export default function SignupPage() {
         name: fullName,
         email,
         employeeId,
-        role,
+        role: "Employee",
         password,
       });
       setIsLoading(false);
@@ -113,7 +113,7 @@ export default function SignupPage() {
               Account Registration Under Review
             </h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Your employee credentials for <strong className="text-foreground">{fullName}</strong> ({employeeId}) with requested role <strong className="text-foreground">{role}</strong> have been logged in the system records.
+              Your employee credentials for <strong className="text-foreground">{fullName}</strong> ({employeeId}) have been logged as <strong className="text-foreground">Employee</strong> in the system records.
             </p>
             <div className="rounded border border-indigo-500/20 bg-indigo-500/5 p-4 text-xs text-indigo-700 dark:text-indigo-400 flex items-start gap-3">
               <Info className="h-4.5 w-4.5 shrink-0 mt-0.5" />
@@ -181,30 +181,14 @@ export default function SignupPage() {
               disabled={isLoading}
             />
 
-            {/* Role / RBAC Clearance Selection */}
-            <div className="flex flex-col gap-1.5 w-full">
-              <label htmlFor="role-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none">
-                Requested Clearance Role
+            {/* Role — locked to EMPLOYEE for new registrations */}
+            <div className="flex flex-col gap-1.5 w-full select-none">
+              <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                Assigned Role
               </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-muted-foreground pointer-events-none flex items-center justify-center h-4 w-4">
-                  <Shield className="h-4 w-4" />
-                </div>
-                <select
-                  id="role-select"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={isLoading}
-                  className="w-full text-sm py-2 pl-9 pr-8 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring appearance-none"
-                >
-                  <option value="Admin">Admin (System Administrator)</option>
-                  <option value="Head">Head (Division Lead)</option>
-                  <option value="AssetManager">AssetManager (Asset Manager)</option>
-                  <option value="Employee">Employee (Operational Staff)</option>
-                </select>
-                <div className="absolute right-3 pointer-events-none flex items-center justify-center text-muted-foreground">
-                  <ChevronDown className="h-4 w-4" />
-                </div>
+              <div className="flex items-center gap-2.5 px-3 py-2 rounded border border-border bg-muted/30 text-xs font-mono text-muted-foreground">
+                <Info className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
+                <span>New accounts are provisioned as <strong className="text-foreground">Employee</strong>. An administrator can elevate your role after approval.</span>
               </div>
             </div>
 

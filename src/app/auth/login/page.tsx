@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Shield, ChevronDown } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2 } from "lucide-react";
 import { motion } from "framer-motion";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
@@ -14,7 +14,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("Employee");
+
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string; general?: string }>({});
@@ -49,7 +49,7 @@ export default function LoginPage() {
       setIsLoading(true);
       const response = await loginUser({ email, password });
       setIsLoading(false);
-      setSuccessMsg(`Handshake successful as ${response.user?.role ?? role}. Redirecting to terminal dashboard...`);
+      setSuccessMsg(`Handshake successful as ${response.user?.role ?? "Employee"}. Redirecting to terminal dashboard...`);
       setTimeout(() => {
         router.push("/dashboard");
       }, 600);
@@ -121,32 +121,7 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Role / RBAC Clearance Selection */}
-            <div className="flex flex-col gap-1.5 w-full">
-              <label htmlFor="role-select" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider select-none">
-                Clearance Role Scope
-              </label>
-              <div className="relative flex items-center">
-                <div className="absolute left-3 text-muted-foreground pointer-events-none flex items-center justify-center h-4 w-4">
-                  <Shield className="h-4 w-4" />
-                </div>
-                <select
-                  id="role-select"
-                  value={role}
-                  onChange={(e) => setRole(e.target.value)}
-                  disabled={isLoading}
-                  className="w-full text-sm py-2 pl-9 pr-8 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring appearance-none"
-                >
-                  <option value="Admin">Admin (System Administrator)</option>
-                  <option value="Head">Head (Division Lead)</option>
-                  <option value="AssetManager">AssetManager (Asset Manager)</option>
-                  <option value="Employee">Employee (Operational Staff)</option>
-                </select>
-                <div className="absolute right-3 pointer-events-none flex items-center justify-center text-muted-foreground">
-                  <ChevronDown className="h-4 w-4" />
-                </div>
-              </div>
-            </div>
+
 
             {/* Email Field */}
             <Input
