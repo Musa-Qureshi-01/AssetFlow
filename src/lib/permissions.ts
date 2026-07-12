@@ -96,6 +96,12 @@ const ALL_NAV_LINKS: (NavLink & { roles: AppRole[] })[] = [
     roles: ["Admin", "AssetManager", "Head", "Employee"],
   },
   {
+    name: "User Profile",
+    href: "/dashboard/profile",
+    iconKey: "user",
+    roles: ["Admin", "AssetManager", "Head", "Employee"],
+  },
+  {
     name: "Asset Registry",
     href: "/dashboard/assets",
     iconKey: "package",
