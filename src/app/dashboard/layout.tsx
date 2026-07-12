@@ -27,6 +27,9 @@ import {
   Inbox
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
+import { motion, AnimatePresence } from "framer-motion";
+import Input from "@/components/ui/input";
+import Button from "@/components/ui/button";
 
 export default function DashboardLayout({
   children,
@@ -178,17 +181,18 @@ export default function DashboardLayout({
               <User className="h-4 w-4 text-indigo-400" />
             </div>
             <div className="flex flex-col text-[10px]">
-              <span className="font-sans font-bold text-zinc-200 leading-tight">Jane Doe</span>
+              <span className="font-sans font-bold text-zinc-200 leading-tight">Musa</span>
               <span className="text-zinc-600 uppercase font-extrabold text-[9px]">Sys_Admin</span>
             </div>
-          </div>
+          </Link>
           <Link
             href="/auth/login"
+            onClick={handleLogout}
             title="Sign Out Session"
             className="text-zinc-600 hover:text-red-400 p-1.5 rounded transition-colors cursor-pointer border border-transparent hover:border-red-500/10 hover:bg-red-500/5"
           >
             <LogOut className="h-4 w-4" />
-          </button>
+          </Link>
         </div>
       </aside>
 

@@ -221,14 +221,19 @@ export default function MaintenanceLogsPage() {
         assetName: targetAsset.name,
         issue: reqIssue,
         priority: reqPriority,
-        requester: "Jane Doe",
+        requester: "Musa",
         loggedTime: "Just logged",
         stage: "Pending",
-        history: ["Logged by Operator Jane Doe // Just logged"]
+        history: ["Logged by Operator Musa // Just logged"]
       };
 
       setTickets([newTicket, ...tickets]);
-    }, 1200);
+    } catch (err: unknown) {
+      console.error(err);
+      const msg = err instanceof Error ? err.message : "Ticket creation failed";
+      setErrors({ issue: msg });
+      setIsSaving(false);
+    }
   };
 
   // Lifecycle transition handlers (simulated in state)
