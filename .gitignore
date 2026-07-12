@@ -53,3 +53,6 @@ src/app/auth/dist/
 !.dev.vars.example
 
 !.env.example
+
+# lockfile — let each build environment generate its own
+package-lock.json

@@ -15,3 +15,10 @@ frontend:
     paths:
       - .next/cache/**/*
       - node_modules/**/*
+environmentVariables:
+  - name: NODE_OPTIONS
+    value: '--max-old-space-size=4096'
+  - name: NEXT_TURBOPACK
+    value: '0'
+  - name: TURBOPACK
+    value: '0'
