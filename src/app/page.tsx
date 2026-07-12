@@ -111,7 +111,7 @@ export default function Home() {
             </h1>
 
             <h2 className="max-w-xl text-lg font-bold tracking-tight text-foreground/80 sm:text-xl md:text-2xl -mt-2">
-              Next-Generation Hardware Control & Operations
+              Automated Enterprise Asset Management & Maintenance Operations
             </h2>
 
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
