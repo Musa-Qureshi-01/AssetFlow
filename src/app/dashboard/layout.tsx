@@ -330,14 +330,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </span>
             </div>
           </Link>
-          <Link
-            href="/auth/login"
+          <button
             onClick={handleLogout}
             title="Sign Out Session"
             className="text-zinc-600 hover:text-red-400 p-1.5 rounded transition-colors cursor-pointer border border-transparent hover:border-red-500/10 hover:bg-red-500/5"
           >
             <LogOut className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </aside>
 
