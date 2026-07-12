@@ -17,7 +17,8 @@ import {
   Clock,
   Database,
   Layers,
-  ClipboardCheck
+  ClipboardCheck,
+  BarChart3
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
 
@@ -52,6 +53,7 @@ export default function DashboardLayout({
     { name: "Maintenance Logs", href: "/dashboard/maintenance", icon: <Wrench className="h-4 w-4" /> },
     { name: "Relocation/Transfers", href: "/dashboard/allocations", icon: <ArrowLeftRight className="h-4 w-4" /> },
     { name: "Audit Cycles", href: "/dashboard/audits", icon: <ClipboardCheck className="h-4 w-4" /> },
+    { name: "Reports & Analytics", href: "/dashboard/analytics", icon: <BarChart3 className="h-4 w-4" /> },
     { name: "Organization Setup", href: "/dashboard/organization", icon: <Layers className="h-4 w-4" /> },
   ];
 
