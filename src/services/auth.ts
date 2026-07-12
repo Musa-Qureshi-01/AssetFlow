@@ -1,7 +1,7 @@
 export type AuthUser = {
     id: string;
     email: string;
-    role: "user" | "admin";
+    role: "Admin" | "AssetManager" | "Head" | "Employee";
     isEmailVerified: boolean;
     twoFactorEnabled?: boolean;
     name?: string;
@@ -45,8 +45,10 @@ export async function registerUser(input: {
     name: string;
     email: string;
     password: string;
+    employeeId: string;
+    role: string;
 }) {
-    return request<AuthResponse>("/auth/register", {
+    return request<AuthResponse>("/api/auth/register", {
         method: "POST",
         body: JSON.stringify(input),
     });
@@ -57,28 +59,22 @@ export async function loginUser(input: {
     password: string;
     twoFactorCode?: string;
 }) {
-    return request<AuthResponse>("/auth/login", {
+    return request<AuthResponse>("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(input),
     });
 }
 
-export async function getCurrentUser(accessToken: string) {
-    return request<{ user: AuthUser }>("/user/me", {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    });
+export async function getCurrentUser() {
+    return request<{ user: AuthUser }>("/api/auth/me");
 }
 
 export async function refreshAccessToken() {
-    return request<AuthResponse>("/auth/refresh", {
-        method: "POST",
-    });
+    return getCurrentUser();
 }
 
 export async function logoutUser() {
-    return request<{ message: string }>("/auth/logout", {
+    return request<{ message: string }>("/api/auth/logout", {
         method: "POST",
     });
 }

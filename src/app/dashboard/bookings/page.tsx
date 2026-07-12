@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   CalendarDays, 
@@ -110,6 +110,8 @@ const INITIAL_BOOKINGS: Booking[] = [
 
 export default function BookingsPage() {
   const [bookings, setBookings] = useState<Booking[]>(INITIAL_BOOKINGS);
+  const [resources, setResources] = useState<Resource[]>(RESOURCES);
+  const [loadError, setLoadError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterType, setFilterType] = useState("all");
   
@@ -135,6 +137,35 @@ export default function BookingsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadBookings() {
+      try {
+        const response = await fetch("/api/dashboard/bookings", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load bookings");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (Array.isArray(data.resources) && data.resources.length > 0) {
+          setResources(data.resources);
+          setResId(data.resources[0].id);
+        }
+        if (Array.isArray(data.bookings)) setBookings(data.bookings);
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database bookings could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadBookings();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenDrawer = (action: "book" | "reschedule" | "cancel", booking?: Booking) => {
     setActiveDrawer(action);
@@ -182,7 +213,7 @@ export default function BookingsPage() {
     return false;
   };
 
-  const handleBookSubmit = (e: React.FormEvent) => {
+  const handleBookSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     if (!bookTitle.trim()) return setErrors({ title: "Booking purpose title is required" });
@@ -190,28 +221,30 @@ export default function BookingsPage() {
     if (!bookStart) return setErrors({ start: "Start time is required" });
     if (!bookEnd) return setErrors({ end: "End time is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/bookings", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          resourceId: resId,
+          title: bookTitle,
+          organizer: bookOrganizer,
+          date: bookDate,
+          startTime: bookStart,
+          endTime: bookEnd,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Booking failed");
+
       setIsSaving(false);
       setSaveSuccess(true);
-
-      const conflict = isTimeConflict(resId, bookDate, bookStart, bookEnd);
-
-      const newBooking: Booking = {
-        id: `B-${Math.floor(210 + Math.random() * 90)}`,
-        resourceId: resId,
-        title: bookTitle,
-        organizer: bookOrganizer,
-        date: bookDate,
-        startTime: bookStart,
-        endTime: bookEnd,
-        status: "Upcoming",
-        overlapConflict: conflict,
-        conflictDetails: conflict ? "Schedule collision: Time slot overlaps with Logistics Flatbed Truck sync route." : undefined
-      };
-
-      setBookings([newBooking, ...bookings]);
-    }, 1200);
+      setBookings((currentBookings) => [data.booking, ...currentBookings]);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({ submit: error instanceof Error ? error.message : "Booking failed" });
+    }
   };
 
   const handleRescheduleSubmit = (e: React.FormEvent) => {
@@ -250,7 +283,7 @@ export default function BookingsPage() {
 
   // Filters application
   const getResourceDetails = (id: string) => {
-    return RESOURCES.find(r => r.id === id) || RESOURCES[0];
+    return resources.find(r => r.id === id) || resources[0] || RESOURCES[0];
   };
 
   const filteredBookings = bookings.filter(b => {
@@ -297,6 +330,12 @@ export default function BookingsPage() {
           </Button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Metrics widgets */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -508,7 +547,7 @@ export default function BookingsPage() {
                             onChange={(e) => setResId(e.target.value)}
                             className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                           >
-                            {RESOURCES.map((r, idx) => (
+                            {resources.map((r, idx) => (
                               <option key={idx} value={r.id}>{r.name} ({r.location})</option>
                             ))}
                           </select>
@@ -573,6 +612,9 @@ export default function BookingsPage() {
                         <Button type="submit" className="w-full mt-4" isLoading={isSaving}>
                           Confirm Reservation
                         </Button>
+                        {errors.submit && (
+                          <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                        )}
                       </form>
                     )}
 

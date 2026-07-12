@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Package, 
@@ -38,6 +38,18 @@ const INITIAL_ACTIVITIES = [
 export default function DashboardPage() {
   const [activeDrawer, setActiveDrawer] = useState<"register" | "book" | "maintenance" | null>(null);
   const [activityFilter, setActivityFilter] = useState<"all" | "allocation" | "booking" | "maintenance">("all");
+  const [dashboardError, setDashboardError] = useState("");
+  const [metrics, setMetrics] = useState({
+    availableAssets: 1482,
+    allocatedAssets: 1104,
+    maintenanceToday: 14,
+    criticalMaintenance: 3,
+    activeBookings: 84,
+    pendingTransfers: 9,
+    upcomingReturns: 32,
+    overdueReturns: 5,
+  });
+  const [overdueReturns, setOverdueReturns] = useState(OVERDUE_RETURNS);
   
   // Form submission simulated states
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -64,6 +76,36 @@ export default function DashboardPage() {
   // Activity list logs state to append new mock submissions in real-time
   const [activities, setActivities] = useState(INITIAL_ACTIVITIES);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadDashboard() {
+      try {
+        const response = await fetch("/api/dashboard", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load dashboard data");
+        const data = await response.json();
+
+        if (!isMounted) return;
+
+        if (data.metrics) setMetrics(data.metrics);
+        if (Array.isArray(data.overdueReturns)) setOverdueReturns(data.overdueReturns);
+        if (Array.isArray(data.activities)) setActivities(data.activities);
+        setDashboardError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setDashboardError("Database dashboard data could not be loaded. Showing local fallback data.");
+        }
+      }
+    }
+
+    loadDashboard();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleCloseDrawer = () => {
     setActiveDrawer(null);
     setSubmitSuccess(false);
@@ -81,29 +123,56 @@ export default function DashboardPage() {
     setMaintLogs("");
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormErrors({});
     if (!regName.trim()) return setFormErrors({ name: "Asset nomenclature name is required" });
     if (!regSerial.trim()) return setFormErrors({ serial: "Hardware serial number is required" });
     if (!regCost.trim() || isNaN(Number(regCost))) return setFormErrors({ cost: "Valid cost value is required" });
 
-    setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      setIsSubmitting(true);
+      const response = await fetch("/api/assets", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: regName,
+          category: regCategory,
+          serial: regSerial,
+          acquisitionDate: new Date().toISOString().slice(0, 10),
+          acquisitionCost: Number(regCost),
+          condition: "Good",
+          location: regDepot,
+          bookable: true,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Asset registration failed");
+      }
+
       setIsSubmitting(false);
       setSubmitSuccess(true);
-      // Append activity mock log
       const newLog = {
         time: "Just Now",
-        type: "registration",
-        desc: `Registered asset ${regName} (${regSerial}) at ${regDepot}`,
-        asset: regSerial.substring(0, 6).toUpperCase(),
+        type: "asset",
+        desc: `Registered asset ${regName} (${data.asset?.tag ?? regSerial}) at ${regDepot}`,
+        asset: data.asset?.tag ?? regSerial.substring(0, 6).toUpperCase(),
         operator: "Jane Doe (EMP-0012)",
         status: "ONLINE",
         statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10"
       };
-      setActivities([newLog, ...activities]);
-    }, 1200);
+      setActivities((currentActivities) => [newLog, ...currentActivities]);
+      setMetrics((currentMetrics) => ({
+        ...currentMetrics,
+        availableAssets: currentMetrics.availableAssets + 1,
+      }));
+    } catch (error) {
+      setIsSubmitting(false);
+      setFormErrors({
+        submit: error instanceof Error ? error.message : "Asset registration failed",
+      });
+    }
   };
 
   const handleBookSubmit = (e: React.FormEvent) => {
@@ -161,15 +230,21 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
+      {dashboardError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {dashboardError}
+        </div>
+      )}
+
       {/* 6 KPI Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {[
-          { label: "Assets Available", value: "1,482", icon: <Package className="h-4 w-4 text-zinc-500" />, sub: "+2.4% vs last week" },
-          { label: "Assets Allocated", value: "1,104", icon: <UserCheck className="h-4 w-4 text-zinc-500" />, sub: "74.4% Utilization" },
-          { label: "Maintenance Today", value: "14", icon: <Wrench className="h-4 w-4 text-zinc-500" />, sub: "3 Critical Tickets", warning: true },
-          { label: "Active Bookings", value: "84", icon: <CalendarDays className="h-4 w-4 text-zinc-500" />, sub: "4 Dispatched today" },
-          { label: "Pending Transfers", value: "9", icon: <ArrowLeftRight className="h-4 w-4 text-zinc-500" />, sub: "In-transit depots" },
-          { label: "Upcoming Returns", value: "32", icon: <History className="h-4 w-4 text-zinc-500" />, sub: "5 Overdue items", alert: true }
+          { label: "Assets Available", value: metrics.availableAssets.toLocaleString(), icon: <Package className="h-4 w-4 text-zinc-500" />, sub: "Ready for deployment" },
+          { label: "Assets Allocated", value: metrics.allocatedAssets.toLocaleString(), icon: <UserCheck className="h-4 w-4 text-zinc-500" />, sub: "Currently in use" },
+          { label: "Maintenance Today", value: metrics.maintenanceToday.toLocaleString(), icon: <Wrench className="h-4 w-4 text-zinc-500" />, sub: `${metrics.criticalMaintenance} Critical Tickets`, warning: metrics.criticalMaintenance > 0 },
+          { label: "Active Bookings", value: metrics.activeBookings.toLocaleString(), icon: <CalendarDays className="h-4 w-4 text-zinc-500" />, sub: "Upcoming or ongoing" },
+          { label: "Pending Transfers", value: metrics.pendingTransfers.toLocaleString(), icon: <ArrowLeftRight className="h-4 w-4 text-zinc-500" />, sub: "Open allocation flows" },
+          { label: "Upcoming Returns", value: metrics.upcomingReturns.toLocaleString(), icon: <History className="h-4 w-4 text-zinc-500" />, sub: `${metrics.overdueReturns} Overdue items`, alert: metrics.overdueReturns > 0 }
         ].map((item, idx) => (
           <Card key={idx} className="relative hover:border-zinc-300 dark:hover:border-zinc-800 transition-colors">
             <CardHeader className="p-3 border-b-0 pb-0 flex flex-row items-center justify-between text-muted-foreground select-none">
@@ -208,11 +283,15 @@ export default function DashboardPage() {
                 </span>
               </div>
               <span className="text-[10px] font-mono font-bold bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20">
-                5 ITEMS OVERDUE
+                {metrics.overdueReturns} ITEMS OVERDUE
               </span>
             </CardHeader>
             <CardContent className="p-4 flex flex-col gap-2.5">
-              {OVERDUE_RETURNS.map((item, idx) => (
+              {overdueReturns.length === 0 ? (
+                <div className="p-3 rounded border border-border bg-background text-xs text-muted-foreground">
+                  No overdue returns in the database.
+                </div>
+              ) : overdueReturns.map((item, idx) => (
                 <div 
                   key={idx} 
                   className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 p-3 rounded border border-border bg-background hover:bg-muted/10 transition-colors font-mono text-[11px]"
@@ -505,6 +584,9 @@ export default function DashboardPage() {
                         <Button type="submit" className="w-full mt-4" isLoading={isSubmitting}>
                           Submit Registration
                         </Button>
+                        {formErrors.submit && (
+                          <span className="text-xs text-danger font-medium text-center">{formErrors.submit}</span>
+                        )}
                       </form>
                     )}
 

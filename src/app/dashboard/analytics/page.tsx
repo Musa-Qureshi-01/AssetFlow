@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { 
   BarChart3, 
@@ -53,6 +53,22 @@ const HEATMAP_DATA = [
 const HOUR_LABELS = ["08:00", "10:00", "12:00", "14:00", "16:00", "18:00"];
 
 export default function AnalyticsPage() {
+  const [metrics, setMetrics] = useState({
+    averageUtilization: 84,
+    idleAssets: 18,
+    maintenanceTotal: 3,
+    nearingRetirement: 4,
+  });
+  const [mostUsedAssets, setMostUsedAssets] = useState(MOST_USED_ASSETS);
+  const [leastUsedAssets, setLeastUsedAssets] = useState(LEAST_USED_ASSETS);
+  const [departmentShares, setDepartmentShares] = useState([
+    { name: "Engineering (ENG)", pct: 45, color: "bg-indigo-500" },
+    { name: "Logistics & Transport (LOG)", pct: 30, color: "bg-indigo-600" },
+    { name: "Quality Assurance (QA)", pct: 15, color: "bg-zinc-400" },
+    { name: "Finance & Accounting (FIN)", pct: 10, color: "bg-zinc-300 dark:bg-zinc-700" }
+  ]);
+  const [loadError, setLoadError] = useState("");
+
   // Filter states
   const [dateRange, setDateRange] = useState("Last 30 Days");
   const [filterDept, setFilterDept] = useState("all");
@@ -60,6 +76,34 @@ export default function AnalyticsPage() {
   const [filterLoc, setFilterLoc] = useState("all");
 
   const [activeTooltip, setActiveTooltip] = useState<{ x: number; y: number; val: string } | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAnalytics() {
+      try {
+        const response = await fetch("/api/dashboard/analytics", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load analytics");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (data.metrics) setMetrics(data.metrics);
+        if (Array.isArray(data.mostUsed) && data.mostUsed.length > 0) setMostUsedAssets(data.mostUsed);
+        if (Array.isArray(data.leastUsed) && data.leastUsed.length > 0) setLeastUsedAssets(data.leastUsed);
+        if (Array.isArray(data.departmentShares) && data.departmentShares.length > 0) setDepartmentShares(data.departmentShares);
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database analytics could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadAnalytics();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Mock export triggers
   const handleExport = (format: "PDF" | "CSV") => {
@@ -99,6 +143,12 @@ export default function AnalyticsPage() {
           </Button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Filter Options Row */}
       <div className="flex flex-col gap-3 p-4 rounded-lg border border-border bg-muted/20 select-none">
@@ -177,28 +227,28 @@ export default function AnalyticsPage() {
         {[
           { 
             label: "Average Utilization", 
-            value: "84.2%", 
-            sub: "+2.4% vs last Q", 
+            value: `${metrics.averageUtilization}%`, 
+            sub: "From live asset states", 
             trendIcon: <TrendingUp className="h-3.5 w-3.5 text-emerald-500" />, 
             icon: <Activity className="h-4 w-4 text-zinc-400" /> 
           },
           { 
             label: "Idle Asset count", 
-            value: "18 items", 
+            value: `${metrics.idleAssets} items`, 
             sub: "Ready in storage", 
             trendIcon: <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />, 
             icon: <Info className="h-4 w-4 text-zinc-400" /> 
           },
           { 
             label: "Maintenance Cycle", 
-            value: "3.2 reqs/mo", 
-            sub: "-12% improvement", 
+            value: `${metrics.maintenanceTotal} reqs`, 
+            sub: "Logged maintenance total", 
             trendIcon: <TrendingDown className="h-3.5 w-3.5 text-emerald-500" />, 
             icon: <Clock className="h-4 w-4 text-zinc-400" /> 
           },
           { 
             label: "Nearing Retirement", 
-            value: "4 items", 
+            value: `${metrics.nearingRetirement} items`, 
             sub: "Requires Q4 replace", 
             trendIcon: <AlertTriangle className="h-3.5 w-3.5 text-amber-500" />, 
             icon: <BarChart3 className="h-4 w-4 text-zinc-400" /> 
@@ -404,10 +454,7 @@ export default function AnalyticsPage() {
 
             <div className="flex flex-col gap-4 mt-2">
               {[
-                { name: "Engineering (ENG)", pct: 45, color: "bg-indigo-500" },
-                { name: "Logistics & Transport (LOG)", pct: 30, color: "bg-indigo-600" },
-                { name: "Quality Assurance (QA)", pct: 15, color: "bg-zinc-400" },
-                { name: "Finance & Accounting (FIN)", pct: 10, color: "bg-zinc-300 dark:bg-zinc-700" }
+                ...departmentShares
               ].map((dept, idx) => (
                 <div key={idx} className="flex flex-col gap-1.5 font-sans">
                   <div className="flex justify-between text-[11px] font-semibold text-foreground">
@@ -450,7 +497,7 @@ export default function AnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {MOST_USED_ASSETS.map((item, idx) => (
+                  {mostUsedAssets.map((item, idx) => (
                     <tr key={idx} className="border-b border-border/40 last:border-b-0 hover:bg-muted/10 transition-colors">
                       <td className="py-2.5 font-mono font-bold text-foreground">
                         <span className="bg-muted px-1.5 py-0.2 rounded border border-border">{item.tag}</span>
@@ -490,7 +537,7 @@ export default function AnalyticsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {LEAST_USED_ASSETS.map((item, idx) => (
+                  {leastUsedAssets.map((item, idx) => (
                     <tr key={idx} className="border-b border-border/40 last:border-b-0 hover:bg-muted/10 transition-colors">
                       <td className="py-2.5 font-mono font-bold text-foreground">
                         <span className="bg-muted px-1.5 py-0.2 rounded border border-border">{item.tag}</span>

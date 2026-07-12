@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   Package, 
@@ -21,6 +21,7 @@ import {
   BarChart3
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
+import { getCurrentUser, logoutUser, type AuthUser } from "@/services/auth";
 
 export default function DashboardLayout({
   children,
@@ -28,8 +29,10 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
   // Update clock in header to reflect standard live ERP monitoring
   useEffect(() => {
@@ -45,6 +48,30 @@ export default function DashboardLayout({
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadSession() {
+      try {
+        const response = await getCurrentUser();
+        if (isMounted) setCurrentUser(response.user);
+      } catch {
+        router.replace("/auth/login");
+      }
+    }
+
+    loadSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [router]);
+
+  const handleLogout = async () => {
+    await logoutUser().catch(() => null);
+    router.replace("/auth/login");
+  };
 
   const navLinks = [
     { name: "Operations Control", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
@@ -147,17 +174,22 @@ export default function DashboardLayout({
               <User className="h-4 w-4 text-indigo-400" />
             </div>
             <div className="flex flex-col text-[10px]">
-              <span className="font-sans font-bold text-zinc-200 leading-tight">Jane Doe</span>
-              <span className="text-zinc-600 uppercase font-extrabold text-[9px]">Sys_Admin</span>
+              <span className="font-sans font-bold text-zinc-200 leading-tight">
+                {currentUser?.name ?? "Loading..."}
+              </span>
+              <span className="text-zinc-600 uppercase font-extrabold text-[9px]">
+                {currentUser?.role ?? "Session"}
+              </span>
             </div>
           </div>
-          <Link
-            href="/auth/login"
+          <button
+            type="button"
+            onClick={handleLogout}
             title="Sign Out Session"
             className="text-zinc-600 hover:text-red-400 p-1.5 rounded transition-colors cursor-pointer border border-transparent hover:border-red-500/10 hover:bg-red-500/5"
           >
             <LogOut className="h-4 w-4" />
-          </Link>
+          </button>
         </div>
       </aside>
 

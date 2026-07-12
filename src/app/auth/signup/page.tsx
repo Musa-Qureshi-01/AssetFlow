@@ -2,13 +2,16 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { User, Mail, ShieldAlert, Lock, CheckCircle, Info, Shield, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { registerUser } from "@/services/auth";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [employeeId, setEmployeeId] = useState("");
@@ -61,24 +64,32 @@ export default function SignupPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
 
     if (!validate()) return;
 
-    setIsLoading(true);
-    // Simulate database lookup & security check
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      await registerUser({
+        name: fullName,
+        email,
+        employeeId,
+        role,
+        password,
+      });
       setIsLoading(false);
-      if (email.toLowerCase() === "demo@assetflow.com") {
-        setErrors({
-          email: "This email address is already bound to a system node.",
-        });
-      } else {
-        setIsSubmitted(true);
-      }
-    }, 1500);
+      setIsSubmitted(true);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 1200);
+    } catch (error) {
+      setIsLoading(false);
+      setErrors({
+        general: error instanceof Error ? error.message : "Registration failed",
+      });
+    }
   };
 
   if (isSubmitted) {
@@ -151,6 +162,12 @@ export default function SignupPage() {
             </span>
           </CardHeader>
           <CardContent className="flex flex-col gap-4 mt-4">
+            {errors.general && (
+              <div className="rounded border border-danger/20 bg-danger/5 p-3 text-xs text-danger">
+                {errors.general}
+              </div>
+            )}
+
             {/* Full Name */}
             <Input
               label="Legal Full Name"

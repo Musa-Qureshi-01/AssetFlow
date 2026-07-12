@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Package, 
@@ -171,6 +171,7 @@ const INITIAL_ASSETS: Asset[] = [
 
 export default function AssetRegistryPage() {
   const [assets, setAssets] = useState<Asset[]>(INITIAL_ASSETS);
+  const [loadError, setLoadError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeDrawer, setActiveDrawer] = useState<"register" | "detail" | null>(null);
   
@@ -197,6 +198,33 @@ export default function AssetRegistryPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCondition, setFilterCondition] = useState("all");
   const [filterLocation, setFilterLocation] = useState("all");
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAssets() {
+      try {
+        const response = await fetch("/api/assets", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load assets");
+        const data = await response.json();
+        if (isMounted && Array.isArray(data.assets)) {
+          setAssets(data.assets);
+          setLoadError("");
+        }
+      } catch (error) {
+        console.error(error);
+        if (isMounted) {
+          setLoadError("Database assets could not be loaded. Showing local fallback data.");
+        }
+      }
+    }
+
+    loadAssets();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenDrawer = (action: "register" | "detail", asset?: Asset) => {
     setActiveDrawer(action);
@@ -227,7 +255,7 @@ export default function AssetRegistryPage() {
     setErrors({});
   };
 
-  const handleRegisterSubmit = (e: React.FormEvent) => {
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     
@@ -236,32 +264,37 @@ export default function AssetRegistryPage() {
     if (!assetDate) return setErrors({ date: "Acquisition date stamp is required" });
     if (!assetCost.trim() || isNaN(Number(assetCost))) return setErrors({ cost: "Valid cost value is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/assets", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          name: assetName,
+          category: assetCat,
+          serial: assetSerial,
+          acquisitionDate: assetDate,
+          acquisitionCost: Number(assetCost),
+          condition: assetCondition,
+          location: assetLoc,
+          bookable: assetBookable,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Asset registration failed");
+      }
+
       setIsSaving(false);
       setSaveSuccess(true);
-      
-      const newTag = `AF-${String(assets.length + 1).padStart(4, "0")}`;
-      const newAsset: Asset = {
-        tag: newTag,
-        name: assetName,
-        category: assetCat,
-        status: "Available",
-        condition: assetCondition,
-        department: "Operations",
-        holder: "None Assigned",
-        location: assetLoc,
-        serial: assetSerial.toUpperCase(),
-        acqDate: assetDate,
-        acqCost: Number(assetCost),
-        bookable: assetBookable,
-        allocationHistory: [
-          { date: assetDate, holder: "System Initialize", action: "RETURNED", location: assetLoc }
-        ],
-        maintenanceHistory: []
-      };
-      setAssets([newAsset, ...assets]);
-    }, 1200);
+      setAssets((currentAssets) => [data.asset, ...currentAssets]);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({
+        submit: error instanceof Error ? error.message : "Asset registration failed",
+      });
+    }
   };
 
   // Status badge style helper
@@ -326,6 +359,12 @@ export default function AssetRegistryPage() {
           </Button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Metric Cards Summary Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -690,6 +729,9 @@ export default function AssetRegistryPage() {
                         <Button type="submit" className="w-full mt-4" isLoading={isSaving}>
                           Complete Registration
                         </Button>
+                        {errors.submit && (
+                          <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                        )}
                       </form>
                     )}
 

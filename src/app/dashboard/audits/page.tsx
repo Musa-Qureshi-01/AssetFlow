@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
@@ -30,6 +30,7 @@ interface AuditAssetItem {
 
 interface AuditCycle {
   id: string;
+  dbId?: string;
   scope: string;
   targetType: "Department" | "Location";
   targetValue: string;
@@ -97,6 +98,10 @@ const MOCK_AUDITORS = ["Jane Doe", "Alex Rivera", "Sarah Jenkins", "Michael Chan
 
 export default function AuditCyclesPage() {
   const [audits, setAudits] = useState<AuditCycle[]>(INITIAL_AUDITS);
+  const [departments, setDepartments] = useState(MOCK_DEPARTMENTS);
+  const [locations, setLocations] = useState(MOCK_LOCATIONS);
+  const [auditors, setAuditors] = useState(MOCK_AUDITORS);
+  const [loadError, setLoadError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState<TabType>("active");
 
@@ -122,6 +127,34 @@ export default function AuditCyclesPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAudits() {
+      try {
+        const response = await fetch("/api/dashboard/audits", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load audits");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (Array.isArray(data.audits)) setAudits(data.audits);
+        if (Array.isArray(data.departments) && data.departments.length > 0) setDepartments(data.departments);
+        if (Array.isArray(data.locations) && data.locations.length > 0) setLocations(data.locations);
+        if (Array.isArray(data.auditors) && data.auditors.length > 0) setAuditors(data.auditors);
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database audit data could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadAudits();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const handleOpenDrawer = (action: "create" | "conduct" | "report", audit?: AuditCycle) => {
     setActiveDrawer(action);
     setSaveSuccess(false);
@@ -131,10 +164,10 @@ export default function AuditCyclesPage() {
     if (action === "create") {
       setScopeTitle("");
       setTargetType("Location");
-      setTargetValue(MOCK_LOCATIONS[0]);
+      setTargetValue(locations[0] || MOCK_LOCATIONS[0]);
       setStartDate("");
       setEndDate("");
-      setAssignedAuditor(MOCK_AUDITORS[0]);
+      setAssignedAuditor(auditors[0] || MOCK_AUDITORS[0]);
       setSelectedAudit(null);
     } else if (action === "conduct" && audit) {
       setSelectedAudit(audit);
@@ -155,40 +188,48 @@ export default function AuditCyclesPage() {
   };
 
   // Submit Operations
-  const handleCreateSubmit = (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     if (!scopeTitle.trim()) return setErrors({ scope: "Audit scope title is required" });
     if (!startDate || !endDate) return setErrors({ dates: "Active date range is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/audits", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          scope: scopeTitle,
+          targetType,
+          targetValue,
+          startDate,
+          endDate,
+          assignedAuditor,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Audit cycle creation failed");
+      }
+
       setIsSaving(false);
       setSaveSuccess(true);
-
-      const newCycle: AuditCycle = {
-        id: `AC-${Math.floor(104 + Math.random() * 95)}`,
-        scope: scopeTitle,
-        targetType: targetType,
-        targetValue: targetValue,
-        startDate: startDate,
-        endDate: endDate,
-        auditors: [assignedAuditor],
-        status: "Draft",
-        progress: 0,
-        checklist: [
-          { tag: "AF-0001", name: "Caterpillar 320 Excavator", verifyState: "Verified", notes: "" },
-          { tag: "AF-0002", name: "Cummins Power Generator", verifyState: "Verified", notes: "" }
-        ]
-      };
-
-      setAudits([...audits, newCycle]);
-    }, 1200);
+      if (data.audit) setAudits((currentAudits) => [data.audit, ...currentAudits]);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({
+        submit: error instanceof Error ? error.message : "Audit cycle creation failed",
+      });
+    }
   };
 
   // Handle Asset Checklist Update (in state progress)
-  const handleSaveAssetProgress = () => {
+  const handleSaveAssetProgress = async () => {
     if (!selectedAudit) return;
+    const focusedAsset = selectedAudit.checklist[focusedAssetIdx];
+    if (!focusedAsset) return;
     
     const updatedChecklist = selectedAudit.checklist.map((item, idx) => {
       if (idx === focusedAssetIdx) {
@@ -197,24 +238,39 @@ export default function AuditCyclesPage() {
       return item;
     });
 
-    // Calculate progress percentage
-    const totalItems = updatedChecklist.length;
-    // If it's a mock state, let's progress by index
-    const progressVal = Math.round(((focusedAssetIdx + 1) / totalItems) * 100);
-
     const updatedAudit: AuditCycle = {
       ...selectedAudit,
       checklist: updatedChecklist,
-      progress: Math.min(progressVal, 100)
+      progress: Math.min(Math.round(((focusedAssetIdx + 1) / updatedChecklist.length) * 100), 100),
+      status: "Active",
     };
 
     setAudits(audits.map(a => a.id === selectedAudit.id ? updatedAudit : a));
     setSelectedAudit(updatedAudit);
 
-    // Save overlay trigger
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/audits", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          auditId: selectedAudit.dbId,
+          assetTag: focusedAsset.tag,
+          verifyState: activeAssetState,
+          notes: activeAssetNote,
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Audit progress save failed");
+      }
+
       setIsSaving(false);
+      if (data.audit) {
+        setAudits((currentAudits) => currentAudits.map((audit) => (audit.id === selectedAudit.id ? data.audit : audit)));
+        setSelectedAudit(data.audit);
+      }
       // Advance focus to next asset if available
       if (focusedAssetIdx < selectedAudit.checklist.length - 1) {
         const nextIdx = focusedAssetIdx + 1;
@@ -223,23 +279,44 @@ export default function AuditCyclesPage() {
         setActiveAssetState(nextItem ? nextItem.verifyState : "Verified");
         setActiveAssetNote(nextItem ? nextItem.notes : "");
       }
-    }, 500);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({
+        submit: error instanceof Error ? error.message : "Audit progress save failed",
+      });
+    }
   };
 
-  const handleCloseAuditCycle = () => {
+  const handleCloseAuditCycle = async () => {
     if (!selectedAudit) return;
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/audits", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          auditId: selectedAudit.dbId,
+          action: "close",
+        }),
+      });
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Audit close failed");
+      }
+
       setIsSaving(false);
       setSaveSuccess(true);
-
-      setAudits(audits.map(a => {
-        if (a.id === selectedAudit.id) {
-          return { ...a, status: "Completed", progress: 100 };
-        }
-        return a;
-      }));
-    }, 1200);
+      if (data.audit) {
+        setAudits((currentAudits) => currentAudits.map((audit) => (audit.id === selectedAudit.id ? data.audit : audit)));
+        setSelectedAudit(data.audit);
+      }
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({
+        submit: error instanceof Error ? error.message : "Audit close failed",
+      });
+    }
   };
 
   const handleFocusAssetChange = (idx: number) => {
@@ -282,6 +359,12 @@ export default function AuditCyclesPage() {
           </Button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Global Tab Controller and Search */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">
@@ -498,7 +581,7 @@ export default function AuditCyclesPage() {
                               onChange={(e) => {
                                 const val = e.target.value as "Department" | "Location";
                                 setTargetType(val);
-                                setTargetValue(val === "Department" ? MOCK_DEPARTMENTS[0] || "" : MOCK_LOCATIONS[0] || "");
+                                setTargetValue(val === "Department" ? departments[0] || "" : locations[0] || "");
                               }}
                               className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                             >
@@ -517,11 +600,11 @@ export default function AuditCyclesPage() {
                               className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                             >
                               {targetType === "Location" ? (
-                                MOCK_LOCATIONS.map((loc, idx) => (
+                                locations.map((loc, idx) => (
                                   <option key={idx} value={loc}>{loc}</option>
                                 ))
                               ) : (
-                                MOCK_DEPARTMENTS.map((dept, idx) => (
+                                departments.map((dept, idx) => (
                                   <option key={idx} value={dept}>{dept}</option>
                                 ))
                               )}
@@ -557,7 +640,7 @@ export default function AuditCyclesPage() {
                             onChange={(e) => setAssignedAuditor(e.target.value)}
                             className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                           >
-                            {MOCK_AUDITORS.map((auditor, idx) => (
+                            {auditors.map((auditor, idx) => (
                               <option key={idx} value={auditor}>{auditor}</option>
                             ))}
                           </select>
@@ -566,6 +649,9 @@ export default function AuditCyclesPage() {
                         <Button type="submit" className="w-full mt-4" isLoading={isSaving}>
                           Initialize Audit Cycle
                         </Button>
+                        {errors.submit && (
+                          <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                        )}
                       </form>
                     )}
 
@@ -672,6 +758,9 @@ export default function AuditCyclesPage() {
                                 >
                                   Commit Checksheet Entry
                                 </Button>
+                                {errors.submit && (
+                                  <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                                )}
 
                               </div>
                             ) : (
@@ -699,6 +788,9 @@ export default function AuditCyclesPage() {
                           >
                             Close Audit Cycle & Compile Report
                           </Button>
+                          {errors.submit && (
+                            <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                          )}
                         </div>
 
                       </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   ArrowLeftRight, 
@@ -82,7 +82,9 @@ export default function AllocationsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("active");
   const [activeDrawer, setActiveDrawer] = useState<DrawerAction>(null);
 
-  // Database lists states to allow mock adding/deleting in real-time
+  // Database lists states to allow adding/deleting in real-time
+  const [assetLookups, setAssetLookups] = useState(ASSET_LOOKUPS);
+  const [loadError, setLoadError] = useState("");
   const [allocations, setAllocations] = useState(INITIAL_ALLOCATIONS);
   const [transfers, setTransfers] = useState(INITIAL_TRANSFERS);
   const [overdues, setOverdues] = useState(INITIAL_OVERDUES);
@@ -106,8 +108,39 @@ export default function AllocationsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadAllocations() {
+      try {
+        const response = await fetch("/api/dashboard/allocations", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load allocations");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (Array.isArray(data.assetLookups) && data.assetLookups.length > 0) {
+          setAssetLookups(data.assetLookups);
+          setSelectedTag(data.assetLookups[0].tag);
+        }
+        if (Array.isArray(data.allocations)) setAllocations(data.allocations);
+        if (Array.isArray(data.transfers)) setTransfers(data.transfers);
+        if (Array.isArray(data.overdues)) setOverdues(data.overdues);
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database allocation data could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadAllocations();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   // Active Lookup item context
-  const selectedAssetContext = ASSET_LOOKUPS.find(a => a.tag === selectedTag) || ASSET_LOOKUPS[2];
+  const selectedAssetContext = assetLookups.find(a => a.tag === selectedTag) || assetLookups[0] || ASSET_LOOKUPS[2];
 
   const handleOpenDrawer = (action: DrawerAction, context?: ActiveAllocation) => {
     setActiveDrawer(action);
@@ -156,10 +189,12 @@ export default function AllocationsPage() {
       
       setAllocations([newAllocation, ...allocations]);
       
-      // Update lookup mock status to Allocated
-      selectedAssetContext.status = "Allocated";
-      selectedAssetContext.holder = targetEmp;
-      selectedAssetContext.department = targetDept;
+      setAssetLookups(assetLookups.map((asset) => asset.tag === selectedAssetContext.tag ? {
+        ...asset,
+        status: "Allocated",
+        holder: targetEmp,
+        department: targetDept,
+      } : asset));
       
       // Reset form fields
       setTargetEmp("");
@@ -207,13 +242,12 @@ export default function AllocationsPage() {
       // Remove from active allocations list
       setAllocations(allocations.filter(a => a.tag !== selectedActiveRow.tag));
 
-      // Reset asset context lookup to Available
-      const lookup = ASSET_LOOKUPS.find(a => a.tag === selectedActiveRow.tag);
-      if (lookup) {
-        lookup.status = "Available";
-        lookup.holder = "None Assigned";
-        lookup.location = "Processing Fac B";
-      }
+      setAssetLookups(assetLookups.map((asset) => asset.tag === selectedActiveRow.tag ? {
+        ...asset,
+        status: "Available",
+        holder: "None Assigned",
+        location: "Processing Fac B",
+      } : asset));
 
       // Check if it was overdue, clean it from overdue list
       setOverdues(overdues.filter(o => o.tag !== selectedActiveRow.tag));
@@ -224,12 +258,11 @@ export default function AllocationsPage() {
     setTransfers(transfers.map(tr => {
       if (tr.id === id) {
         if (action === "APPROVED") {
-          // Relocate asset allocation
-          const lookup = ASSET_LOOKUPS.find(a => a.tag === tr.tag);
-          if (lookup) {
-            lookup.holder = tr.toHolder.split(" ")[0];
-            lookup.status = "Allocated";
-          }
+          setAssetLookups(assetLookups.map((asset) => asset.tag === tr.tag ? {
+            ...asset,
+            holder: tr.toHolder.split(" ")[0],
+            status: "Allocated",
+          } : asset));
           // Remove or update allocation dates
           setAllocations(allocations.map(al => al.tag === tr.tag ? { ...al, custodian: tr.toHolder } : al));
         }
@@ -269,6 +302,12 @@ export default function AllocationsPage() {
           Deploy hardware nodes, negotiate inter-sector transfer requests, and inspect returned equipment conditions.
         </p>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Main Workspace Split Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -542,7 +581,7 @@ export default function AllocationsPage() {
                     }}
                     className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                   >
-                    {ASSET_LOOKUPS.map((a, idx) => (
+                    {assetLookups.map((a, idx) => (
                       <option key={idx} value={a.tag}>{a.tag} — {a.name}</option>
                     ))}
                   </select>

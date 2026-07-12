@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Building2, 
@@ -79,6 +79,7 @@ export default function OrganizationSetupPage() {
   const [activeDrawer, setActiveDrawer] = useState<DrawerAction | null>(null);
   
   // Dynamic State List Handlers
+  const [loadError, setLoadError] = useState("");
   const [departments, setDepartments] = useState(INITIAL_DEPARTMENTS);
   const [categories, setCategories] = useState(INITIAL_CATEGORIES);
   const [employees, setEmployees] = useState(INITIAL_EMPLOYEES);
@@ -106,6 +107,33 @@ export default function OrganizationSetupPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadOrganization() {
+      try {
+        const response = await fetch("/api/dashboard/organization", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load organization");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (Array.isArray(data.departments)) setDepartments(data.departments);
+        if (Array.isArray(data.categories)) setCategories(data.categories);
+        if (Array.isArray(data.employees)) setEmployees(data.employees);
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database organization data could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadOrganization();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenDrawer = (action: DrawerAction, context?: Department | AssetCategory | Employee) => {
     setActiveDrawer(action);
@@ -169,41 +197,71 @@ export default function OrganizationSetupPage() {
   };
 
   // Submit Operations
-  const handleDeptSave = (e: React.FormEvent) => {
+  const handleDeptSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     if (!deptName.trim()) return setErrors({ name: "Department nomenclature name is required" });
     if (!deptCode.trim() || deptCode.length < 2) return setErrors({ code: "Unique 2-4 character code is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/organization", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          type: "department",
+          name: deptName,
+          code: deptCode,
+          status: deptStatus,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Department save failed");
+
       setIsSaving(false);
       setSaveSuccess(true);
       if (selectedDept) {
-        // Edit flow
-        setDepartments(departments.map(d => d.code === selectedDept.code ? { code: deptCode.toUpperCase(), name: deptName, head: deptHead, parent: deptParent, status: deptStatus } : d));
+        setDepartments(departments.map(d => d.code === selectedDept.code ? { ...data.department, head: deptHead, parent: deptParent } : d));
       } else {
-        // Create flow
-        setDepartments([...departments, { code: deptCode.toUpperCase(), name: deptName, head: deptHead, parent: deptParent, status: deptStatus }]);
+        setDepartments([...departments, { ...data.department, head: deptHead, parent: deptParent }]);
       }
-    }, 1200);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({ submit: error instanceof Error ? error.message : "Department save failed" });
+    }
   };
 
-  const handleCatSave = (e: React.FormEvent) => {
+  const handleCatSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     if (!catName.trim()) return setErrors({ name: "Category category name is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/organization", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          type: "category",
+          name: catName,
+          description: catDesc,
+          fields: catFields,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Category save failed");
+
       setIsSaving(false);
       setSaveSuccess(true);
       if (selectedCat) {
-        setCategories(categories.map(c => c.name === selectedCat.name ? { name: catName, description: catDesc, itemCount: c.itemCount, fields: catFields } : c));
+        setCategories(categories.map(c => c.name === selectedCat.name ? { ...data.category, itemCount: c.itemCount } : c));
       } else {
-        setCategories([...categories, { name: catName, description: catDesc, itemCount: 0, fields: catFields }]);
+        setCategories([...categories, data.category]);
       }
-    }, 1200);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({ submit: error instanceof Error ? error.message : "Category save failed" });
+    }
   };
 
   const handleReassignSave = (e: React.FormEvent) => {
@@ -291,6 +349,12 @@ export default function OrganizationSetupPage() {
           ))}
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Global search and action header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">

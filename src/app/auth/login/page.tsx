@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import Input from "@/components/ui/input";
 import Button from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
+import { loginUser } from "@/services/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -37,28 +38,30 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSuccessMsg("");
     setErrors({});
 
     if (!validate()) return;
 
-    setIsLoading(true);
-    // Simulate auth token API handshake
-    setTimeout(() => {
+    try {
+      setIsLoading(true);
+      const response = await loginUser({ email, password });
       setIsLoading(false);
-      if (email === "demo@assetflow.com" && password === "password123") {
-        setSuccessMsg(`Handshake successful as ${role}. Redirecting to terminal dashboard...`);
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 1000);
-      } else {
-        setErrors({
-          general: "Authentication rejected. Invalid employee credentials or security token expired.",
-        });
-      }
-    }, 1500);
+      setSuccessMsg(`Handshake successful as ${response.user?.role ?? role}. Redirecting to terminal dashboard...`);
+      setTimeout(() => {
+        router.push("/dashboard");
+      }, 600);
+    } catch (error) {
+      setIsLoading(false);
+      setErrors({
+        general:
+          error instanceof Error
+            ? error.message
+            : "Authentication rejected. Invalid employee credentials or security token expired.",
+      });
+    }
   };
 
   const handleQuickDemoFill = () => {
@@ -216,14 +219,14 @@ export default function LoginPage() {
             {/* Quick Demo Assist Block */}
             <div className="w-full text-center border-t border-dashed border-border pt-3">
               <span className="text-[10px] text-muted-foreground font-mono">
-                DEVELOPER DEMO CREDENTIALS:
+                DATABASE LOGIN ENABLED:
               </span>
               <button
                 type="button"
                 onClick={handleQuickDemoFill}
                 className="mt-1 block mx-auto text-xs font-mono py-1 px-2.5 rounded bg-muted hover:bg-muted-foreground/15 border border-border text-foreground transition-all duration-150 active:scale-[0.98] cursor-pointer"
               >
-                demo@assetflow.com // password123
+                Fill legacy demo credentials
               </button>
             </div>
           </CardFooter>

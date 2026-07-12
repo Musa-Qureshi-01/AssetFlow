@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Search, 
@@ -115,6 +115,8 @@ const TECHNICIANS = ["Alex Rivera", "Sarah Jenkins", "Michael Chang"];
 
 export default function MaintenanceLogsPage() {
   const [tickets, setTickets] = useState<MaintenanceTicket[]>(INITIAL_TICKETS);
+  const [assets, setAssets] = useState(MOCK_ASSETS);
+  const [loadError, setLoadError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterPriority, setFilterPriority] = useState("all");
 
@@ -134,6 +136,35 @@ export default function MaintenanceLogsPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadMaintenance() {
+      try {
+        const response = await fetch("/api/dashboard/maintenance", { cache: "no-store" });
+        if (!response.ok) throw new Error("Unable to load maintenance");
+        const data = await response.json();
+        if (!isMounted) return;
+
+        if (Array.isArray(data.tickets)) setTickets(data.tickets);
+        if (Array.isArray(data.assets) && data.assets.length > 0) {
+          setAssets(data.assets);
+          setReqAssetTag(data.assets[0].tag);
+        }
+        setLoadError("");
+      } catch (error) {
+        console.error(error);
+        if (isMounted) setLoadError("Database maintenance data could not be loaded. Showing local fallback data.");
+      }
+    }
+
+    loadMaintenance();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const handleOpenDrawer = (action: "raise" | "detail", ticket?: MaintenanceTicket) => {
     setActiveDrawer(action);
@@ -161,31 +192,32 @@ export default function MaintenanceLogsPage() {
   };
 
   // Submit Operations
-  const handleRaiseSubmit = (e: React.FormEvent) => {
+  const handleRaiseSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
     if (!reqIssue.trim()) return setErrors({ issue: "Issue details description is required" });
 
-    setIsSaving(true);
-    setTimeout(() => {
+    try {
+      setIsSaving(true);
+      const response = await fetch("/api/dashboard/maintenance", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          assetTag: reqAssetTag,
+          issue: reqIssue,
+          priority: reqPriority,
+        }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Ticket creation failed");
+
       setIsSaving(false);
       setSaveSuccess(true);
-
-      const targetAsset = MOCK_ASSETS.find(a => a.tag === reqAssetTag) || MOCK_ASSETS[0];
-      const newTicket: MaintenanceTicket = {
-        id: `WO-${Math.floor(805 + Math.random() * 95)}`,
-        tag: reqAssetTag,
-        assetName: targetAsset.name,
-        issue: reqIssue,
-        priority: reqPriority,
-        requester: "Jane Doe",
-        loggedTime: "Just logged",
-        stage: "Pending",
-        history: ["Logged by Operator Jane Doe // Just logged"]
-      };
-
-      setTickets([newTicket, ...tickets]);
-    }, 1200);
+      setTickets((currentTickets) => [data.ticket, ...currentTickets]);
+    } catch (error) {
+      setIsSaving(false);
+      setErrors({ submit: error instanceof Error ? error.message : "Ticket creation failed" });
+    }
   };
 
   // Lifecycle transition handlers (simulated in state)
@@ -312,6 +344,12 @@ export default function MaintenanceLogsPage() {
           </Button>
         </div>
       </div>
+
+      {loadError && (
+        <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-xs text-amber-700 dark:text-amber-300">
+          {loadError}
+        </div>
+      )}
 
       {/* Filter and Search row */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 select-none">
@@ -494,7 +532,7 @@ export default function MaintenanceLogsPage() {
                             onChange={(e) => setReqAssetTag(e.target.value)}
                             className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                           >
-                            {MOCK_ASSETS.map((a, idx) => (
+                            {assets.map((a, idx) => (
                               <option key={idx} value={a.tag}>{a.tag} — {a.name}</option>
                             ))}
                           </select>
@@ -548,6 +586,9 @@ export default function MaintenanceLogsPage() {
                         <Button type="submit" className="w-full mt-4" isLoading={isSaving}>
                           Submit Ticket Request
                         </Button>
+                        {errors.submit && (
+                          <span className="text-xs text-danger font-medium text-center">{errors.submit}</span>
+                        )}
                       </form>
                     )}
 
