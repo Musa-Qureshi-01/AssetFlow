@@ -48,7 +48,7 @@ export default function DashboardLayout({
   const navLinks = [
     { name: "Operations Control", href: "/dashboard", icon: <LayoutDashboard className="h-4 w-4" /> },
     { name: "Asset Registry", href: "/dashboard/assets", icon: <Package className="h-4 w-4" /> },
-    { name: "Bookings & Schedules", href: "/dashboard/allocations", icon: <Calendar className="h-4 w-4" /> },
+    { name: "Bookings & Schedules", href: "/dashboard/bookings", icon: <Calendar className="h-4 w-4" /> },
     { name: "Maintenance Logs", href: "#", icon: <Wrench className="h-4 w-4" /> },
     { name: "Relocation/Transfers", href: "/dashboard/allocations", icon: <ArrowLeftRight className="h-4 w-4" /> },
     { name: "System Settings", href: "#", icon: <Settings className="h-4 w-4" /> },
