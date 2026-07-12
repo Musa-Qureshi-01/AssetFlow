@@ -9,14 +9,22 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "express": "^5.2.1",
     "framer-motion": "^12.42.2",
+    "google-auth-library": "^10.9.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.24.0",
+    "mongoose": "^9.7.4",
     "next": "16.2.10",
+    "otplib": "^13.4.1",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
