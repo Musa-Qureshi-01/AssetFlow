@@ -64,6 +64,7 @@ Configures the corporate reporting layout by mapping organizational divisions, d
 
 Below is the entity-relationship database structure mapping users, assets, categories, bookings, audit logs, and maintenance pipelines:
 
+![Database Design Schema](./db_schema.png)
 
 ## Team Members
 
