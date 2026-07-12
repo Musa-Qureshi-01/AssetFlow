@@ -41,8 +41,8 @@ export default function ProfilePage() {
       try {
         const sessionData = await getCurrentUser();
         if (isMounted && sessionData?.user) {
-          setFullName(sessionData.user.name);
-          setEmail(sessionData.user.email);
+          setFullName(sessionData.user.name ?? "");
+          setEmail(sessionData.user.email ?? "");
           setSystemRole(
             sessionData.user.role === "Admin" ? "System Administrator"
             : sessionData.user.role === "AssetManager" ? "Asset Manager"

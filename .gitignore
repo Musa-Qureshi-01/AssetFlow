@@ -44,3 +44,12 @@ node_modules/
 dist/
 src/app/auth/node_modules/
 src/app/auth/dist/
+# OpenNext
+.open-next
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+
+!.env.example
