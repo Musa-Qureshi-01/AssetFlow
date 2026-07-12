@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, AlertCircle, CheckCircle2, Shield, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 import Input from "@/components/ui/input";
@@ -9,6 +10,7 @@ import Button from "@/components/ui/button";
 import { Card, CardHeader, CardContent, CardFooter } from "@/components/ui/card";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("Employee");
@@ -48,6 +50,9 @@ export default function LoginPage() {
       setIsLoading(false);
       if (email === "demo@assetflow.com" && password === "password123") {
         setSuccessMsg(`Handshake successful as ${role}. Redirecting to terminal dashboard...`);
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1000);
       } else {
         setErrors({
           general: "Authentication rejected. Invalid employee credentials or security token expired.",
