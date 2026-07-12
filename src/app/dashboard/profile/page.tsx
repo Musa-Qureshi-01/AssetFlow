@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   User, 
   Mail, 
@@ -12,6 +12,7 @@ import {
 import Button from "@/components/ui/button";
 import Input from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { getCurrentUser } from "@/services/auth";
 
 interface AssignedAsset {
   tag: string;
@@ -22,34 +23,65 @@ interface AssignedAsset {
 }
 
 export default function ProfilePage() {
-  // Mock logged-in user profile parameters (Musa)
-  const [fullName, setFullName] = useState("Musa");
-  const [email, setEmail] = useState("musaqureshi788code@gmail.com");
+  const [fullName, setFullName] = useState("Loading…");
+  const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("+91 90123 45678");
 
   // Read-only system administrative blocks
-  const systemRole = "System Administrator";
-  const systemDept = "Engineering";
-  const systemStatus = "Active / Verified";
-  const systemClearance = "Level 5 (Full Access)";
+  const [systemRole, setSystemRole] = useState("Employee");
+  const [systemDept, setSystemDept] = useState("Engineering");
+  const [systemStatus, setSystemStatus] = useState("Active / Verified");
+  const [systemClearance, setSystemClearance] = useState("Level 1 (Basic Access)");
 
-  // Currently assigned assets to Musa
-  const assignedAssets: AssignedAsset[] = [
-    { 
-      tag: "AF-0001", 
-      name: "Caterpillar 320 Excavator", 
-      category: "Heavy Machinery", 
-      condition: "Good", 
-      assignedDate: "2026-07-10" 
-    },
-    { 
-      tag: "AF-0003", 
-      name: "Hyster H190 Forklift", 
-      category: "Logistics Fleet", 
-      condition: "Good", 
-      assignedDate: "2026-07-12" 
+  const [assignedAssets, setAssignedAssets] = useState<AssignedAsset[]>([]);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProfileData() {
+      try {
+        const sessionData = await getCurrentUser();
+        if (isMounted && sessionData?.user) {
+          setFullName(sessionData.user.name);
+          setEmail(sessionData.user.email);
+          setSystemRole(
+            sessionData.user.role === "Admin" ? "System Administrator"
+            : sessionData.user.role === "AssetManager" ? "Asset Manager"
+            : sessionData.user.role === "Head" ? "Head of Department"
+            : "Employee"
+          );
+          setSystemClearance(
+            sessionData.user.role === "Admin" ? "Level 5 (Full Access)"
+            : sessionData.user.role === "AssetManager" ? "Level 4 (Asset Control)"
+            : sessionData.user.role === "Head" ? "Level 3 (Dept Clearance)"
+            : "Level 1 (Basic Access)"
+          );
+          
+          // Now fetch assets and filter for those checked out by the user
+          const assetsRes = await fetch("/api/assets");
+          if (assetsRes.ok) {
+            const data = await assetsRes.json();
+            if (isMounted && Array.isArray(data.assets)) {
+              // Match user name
+              const userAssets = data.assets
+                .filter((a: any) => a.holder === sessionData.user.name || (a.holder && a.holder.includes(sessionData.user.name)))
+                .map((a: any) => ({
+                  tag: a.tag,
+                  name: a.name,
+                  category: a.category,
+                  condition: a.condition,
+                  assignedDate: a.acqDate || new Date().toISOString().slice(0, 10),
+                }));
+              setAssignedAssets(userAssets);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load profile data:", err);
+      }
     }
-  ];
+    loadProfileData();
+    return () => { isMounted = false; };
+  }, []);
 
   // Simulated save progress
   const [isSaving, setIsSaving] = useState(false);

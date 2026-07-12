@@ -61,6 +61,7 @@ interface Notification {
   priority: "High" | "Medium" | "Low";
   isRead: boolean;
   timestamp: string;
+  roles?: AppRole[];
 }
 
 const INITIAL_NOTIFICATIONS: Notification[] = [
@@ -72,6 +73,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     priority: "High",
     isRead: false,
     timestamp: "Today, 09:14",
+    roles: ["Admin", "AssetManager"],
   },
   {
     id: "n2",
@@ -81,6 +83,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     priority: "Medium",
     isRead: false,
     timestamp: "Today, 08:47",
+    roles: ["Admin", "AssetManager", "Head", "Employee"],
   },
   {
     id: "n3",
@@ -90,6 +93,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     priority: "Low",
     isRead: true,
     timestamp: "Yesterday, 17:30",
+    roles: ["Admin", "AssetManager", "Head"],
   },
   {
     id: "n4",
@@ -99,6 +103,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     priority: "High",
     isRead: false,
     timestamp: "Yesterday, 14:00",
+    roles: ["Admin", "AssetManager", "Head", "Employee"],
   },
   {
     id: "n5",
@@ -108,6 +113,7 @@ const INITIAL_NOTIFICATIONS: Notification[] = [
     priority: "High",
     isRead: true,
     timestamp: "2 days ago",
+    roles: ["Admin", "AssetManager"],
   },
 ];
 
@@ -225,10 +231,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     setSaveSuccess(true);
   };
 
-  const unreadCount = notifications.filter((n) => !n.isRead).length;
+  const unreadCount = notifications.filter((n) => {
+    if (n.roles && !n.roles.includes(appRole)) return false;
+    return !n.isRead;
+  }).length;
 
   // ── Filtered notifications ─────────────────────────────────────────────────
   const filteredNotifications = notifications.filter((n) => {
+    if (n.roles && !n.roles.includes(appRole)) return false;
+    
     if (filterType === "unread") return !n.isRead;
     if (filterType === "high")   return n.priority === "High";
     return true;
