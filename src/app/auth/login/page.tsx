@@ -64,27 +64,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async (role: "admin" | "asset_manager" | "dept_head" | "employee") => {
-    setErrors({});
-    setSuccessMsg("");
-    try {
-      setIsLoading(true);
-      const res = await fetch("/api/auth/demo", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ role }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.message || "Demo login failed");
-      setIsLoading(false);
-      setSuccessMsg(`Demo session started as ${data.user?.name}. Redirecting...`);
-      setTimeout(() => router.push("/dashboard"), 500);
-    } catch (err) {
-      setIsLoading(false);
-      setErrors({ general: err instanceof Error ? err.message : "Demo login failed" });
-    }
-  };
+
 
   return (
     <motion.div
@@ -207,31 +187,7 @@ export default function LoginPage() {
               Sign In to Terminal
             </Button>
 
-            {/* Quick Demo Assist Block */}
-            {/* Dev Demo Quick-Access Panel */}
-            <div className="w-full border-t border-dashed border-border pt-3 flex flex-col gap-2">
-              <span className="text-[9px] text-center text-zinc-500 font-mono font-bold uppercase tracking-widest select-none">
-                ⚡ Dev Mode — Instant Role Login
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                {([
-                  { role: "admin"        as const, label: "Admin",         color: "text-indigo-500 border-indigo-500/30 bg-indigo-500/5 hover:bg-indigo-500/10" },
-                  { role: "asset_manager" as const, label: "Asset Manager",  color: "text-emerald-500 border-emerald-500/30 bg-emerald-500/5 hover:bg-emerald-500/10" },
-                  { role: "dept_head"    as const, label: "Dept Head",      color: "text-amber-500 border-amber-500/30 bg-amber-500/5 hover:bg-amber-500/10" },
-                  { role: "employee"     as const, label: "Employee",        color: "text-zinc-400 border-zinc-700/40 bg-zinc-800/20 hover:bg-zinc-700/20" },
-                ]).map(({ role, label, color }) => (
-                  <button
-                    key={role}
-                    type="button"
-                    disabled={isLoading}
-                    onClick={() => handleDemoLogin(role)}
-                    className={`py-1.5 px-2 rounded border text-[10px] font-mono font-bold transition-all cursor-pointer disabled:opacity-40 ${color}`}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </div>
+
           </CardFooter>
         </form>
       </Card>

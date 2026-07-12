@@ -49,6 +49,7 @@ const NAV_ICONS: Record<string, React.ReactNode> = {
   clipboard: <ClipboardCheck className="h-4 w-4" />,
   chart:     <BarChart3 className="h-4 w-4" />,
   layers:    <Layers className="h-4 w-4" />,
+  user:      <User className="h-4 w-4" />,
 };
 
 // ─── Notification types ───────────────────────────────────────────────────────
