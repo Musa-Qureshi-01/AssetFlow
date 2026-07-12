@@ -67,16 +67,16 @@ const INITIAL_ASSETS: Asset[] = [
     status: "Allocated",
     condition: "Good",
     department: "Engineering",
-    holder: "John Green",
+    holder: "Muskan",
     location: "Depot Sector C",
     serial: "CAT-320X-9012",
     acqDate: "2024-03-15",
     acqCost: 125000,
     bookable: true,
     allocationHistory: [
-      { date: "2026-07-10", holder: "John Green (EMP-1082)", action: "DISPATCHED", location: "Depot Sector C" },
-      { date: "2026-05-12", holder: "Bob Vance (EMP-0881)", action: "RETURNED", location: "Depot Sector A" },
-      { date: "2026-02-18", holder: "Bob Vance (EMP-0881)", action: "DISPATCHED", location: "Depot Sector B" }
+      { date: "2026-07-10", holder: "Muskan (EMP-1082)", action: "DISPATCHED", location: "Depot Sector C" },
+      { date: "2026-05-12", holder: "Chloe Dubois (EMP-0881)", action: "RETURNED", location: "Depot Sector A" },
+      { date: "2026-02-18", holder: "Chloe Dubois (EMP-0881)", action: "DISPATCHED", location: "Depot Sector B" }
     ],
     maintenanceHistory: [
       { date: "2026-06-02", issue: "Hydraulic oil filter replacement", priority: "Standard", status: "RESOLVED" },
@@ -90,15 +90,15 @@ const INITIAL_ASSETS: Asset[] = [
     status: "Under Maintenance",
     condition: "Fair",
     department: "Logistics",
-    holder: "Mark Davis",
+    holder: "Chloe Dubois",
     location: "Transit Zone A",
     serial: "CUM-GEN-4050",
     acqDate: "2024-06-20",
     acqCost: 45000,
     bookable: true,
     allocationHistory: [
-      { date: "2026-07-08", holder: "Mark Davis (EMP-0921)", action: "DISPATCHED", location: "Transit Zone A" },
-      { date: "2025-12-04", holder: "Charlie Brown (EMP-0402)", action: "RETURNED", location: "Depot Sector A" }
+      { date: "2026-07-08", holder: "Rajesh Kumar (EMP-0921)", action: "DISPATCHED", location: "Transit Zone A" },
+      { date: "2025-12-04", holder: "Aarav Mehta (EMP-0402)", action: "RETURNED", location: "Depot Sector A" }
     ],
     maintenanceHistory: [
       { date: "2026-07-11", issue: "Radiator fluid leak inspection", priority: "Urgent", status: "IN INSPECTION" },
@@ -119,8 +119,8 @@ const INITIAL_ASSETS: Asset[] = [
     acqCost: 32000,
     bookable: true,
     allocationHistory: [
-      { date: "2026-06-15", holder: "Bob Vance (EMP-0881)", action: "RETURNED", location: "Processing Fac B" },
-      { date: "2026-04-01", holder: "Bob Vance (EMP-0881)", action: "DISPATCHED", location: "Depot Sector C" }
+      { date: "2026-06-15", holder: "Chloe Dubois (EMP-0881)", action: "RETURNED", location: "Processing Fac B" },
+      { date: "2026-04-01", holder: "Chloe Dubois (EMP-0881)", action: "DISPATCHED", location: "Depot Sector C" }
     ],
     maintenanceHistory: [
       { date: "2026-01-05", issue: "Fork arm safety inspection", priority: "Standard", status: "RESOLVED" }
@@ -133,14 +133,14 @@ const INITIAL_ASSETS: Asset[] = [
     status: "Reserved",
     condition: "Excellent",
     department: "Quality Assurance",
-    holder: "Charlie Brown",
+    holder: "Aarav Mehta",
     location: "Depot Sector A",
     serial: "FLK-87V-1980",
     acqDate: "2025-08-22",
     acqCost: 3500,
     bookable: false,
     allocationHistory: [
-      { date: "2026-07-05", holder: "Charlie Brown (EMP-0402)", action: "DISPATCHED", location: "Depot Sector A" }
+      { date: "2026-07-05", holder: "Aarav Mehta (EMP-0402)", action: "DISPATCHED", location: "Depot Sector A" }
     ],
     maintenanceHistory: [
       { date: "2026-05-10", issue: "Annual NIST traceability calibration", priority: "Standard", status: "RESOLVED" }
@@ -160,7 +160,7 @@ const INITIAL_ASSETS: Asset[] = [
     acqCost: 55000,
     bookable: false,
     allocationHistory: [
-      { date: "2026-03-12", holder: "Mark Davis (EMP-0921)", action: "RETURNED", location: "Depot Sector B" }
+      { date: "2026-03-12", holder: "Rajesh Kumar (EMP-0921)", action: "RETURNED", location: "Depot Sector B" }
     ],
     maintenanceHistory: [
       { date: "2026-03-01", issue: "Transmission failure diagnostic", priority: "Critical", status: "RESOLVED" },

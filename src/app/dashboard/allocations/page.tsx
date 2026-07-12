@@ -58,24 +58,24 @@ interface OverdueReturn {
 
 // Initial Mock Assets Database lookup
 const ASSET_LOOKUPS: MockAssetLookup[] = [
-  { tag: "AF-0001", name: "Caterpillar 320 Excavator", status: "Allocated", holder: "John Green", department: "Engineering", location: "Depot Sector C" },
-  { tag: "AF-0002", name: "Cummins Power Generator", status: "Under Maintenance", holder: "Mark Davis", department: "Logistics", location: "Transit Zone A" },
+  { tag: "AF-0001", name: "Caterpillar 320 Excavator", status: "Allocated", holder: "Muskan", department: "Engineering", location: "Depot Sector C" },
+  { tag: "AF-0002", name: "Cummins Power Generator", status: "Under Maintenance", holder: "Chloe Dubois", department: "Logistics", location: "Transit Zone A" },
   { tag: "AF-0003", name: "Hyster H190 Forklift", status: "Available", holder: "None Assigned", department: "Logistics", location: "Processing Fac B" },
-  { tag: "AF-0004", name: "Precision Multi-Meter Box", status: "Reserved", holder: "Charlie Brown", department: "Quality Assurance", location: "Depot Sector A" },
+  { tag: "AF-0004", name: "Precision Multi-Meter Box", status: "Reserved", holder: "Aarav Mehta", department: "Quality Assurance", location: "Depot Sector A" },
   { tag: "AF-0005", name: "Ford F-250 Duty Truck", status: "Available", holder: "None Assigned", department: "Logistics & Transport", location: "Depot Sector B" },
 ];
 
 const INITIAL_ALLOCATIONS: ActiveAllocation[] = [
-  { tag: "AF-0001", name: "Caterpillar 320 Excavator", custodian: "John Green (EMP-1082)", department: "Engineering", startDate: "2026-07-10", dueDate: "2026-07-24" },
-  { tag: "AF-0004", name: "Precision Multi-Meter Box", custodian: "Charlie Brown (EMP-0402)", department: "Quality Assurance", startDate: "2026-07-05", dueDate: "2026-07-19" },
+  { tag: "AF-0001", name: "Caterpillar 320 Excavator", custodian: "Muskan (EMP-1082)", department: "Engineering", startDate: "2026-07-10", dueDate: "2026-07-24" },
+  { tag: "AF-0004", name: "Precision Multi-Meter Box", custodian: "Aarav Mehta (EMP-0402)", department: "Quality Assurance", startDate: "2026-07-05", dueDate: "2026-07-19" },
 ];
 
 const INITIAL_TRANSFERS: PendingTransfer[] = [
-  { id: "TR-2041", tag: "AF-0002", name: "Cummins Power Generator", fromHolder: "Mark Davis", toHolder: "Bob Vance (EMP-0881)", reason: "Temporary backup power node failure at Depot B", priority: "High", status: "PENDING_APPROVAL" },
+  { id: "TR-2041", tag: "AF-0002", name: "Cummins Power Generator", fromHolder: "Chloe Dubois", toHolder: "Rajesh Kumar (EMP-0921)", reason: "Temporary backup power node failure at Depot B", priority: "High", status: "PENDING_APPROVAL" },
 ];
 
 const INITIAL_OVERDUES: OverdueReturn[] = [
-  { tag: "AF-0005", name: "Ford F-250 Duty Truck", custodian: "Mark Davis (EMP-0921)", dueDate: "2026-07-09", overdueDays: 3 },
+  { tag: "AF-0005", name: "Ford F-250 Duty Truck", custodian: "Elena Rossi (EMP-1002)", dueDate: "2026-07-09", overdueDays: 3 },
 ];
 
 export default function AllocationsPage() {

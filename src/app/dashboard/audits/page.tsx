@@ -50,7 +50,7 @@ const INITIAL_AUDITS: AuditCycle[] = [
     targetValue: "Depot Sector C",
     startDate: "2026-07-01",
     endDate: "2026-07-15",
-    auditors: ["Jane Doe", "Alex Rivera"],
+    auditors: ["Musa", "Muskan"],
     status: "Active",
     progress: 50,
     checklist: [
@@ -67,7 +67,7 @@ const INITIAL_AUDITS: AuditCycle[] = [
     targetValue: "Logistics & Transport",
     startDate: "2026-06-15",
     endDate: "2026-06-25",
-    auditors: ["Sarah Jenkins"],
+    auditors: ["Muskan"],
     status: "Completed",
     progress: 100,
     checklist: [
@@ -82,7 +82,7 @@ const INITIAL_AUDITS: AuditCycle[] = [
     targetValue: "Depot Sector A",
     startDate: "2026-08-01",
     endDate: "2026-08-10",
-    auditors: ["Michael Chang"],
+    auditors: ["Musa"],
     status: "Draft",
     progress: 0,
     checklist: [
@@ -93,7 +93,7 @@ const INITIAL_AUDITS: AuditCycle[] = [
 
 const MOCK_DEPARTMENTS = ["Engineering", "Logistics & Transport", "Finance & Accounting", "Quality Assurance"];
 const MOCK_LOCATIONS = ["Depot Sector A", "Depot Sector B", "Depot Sector C", "Transit Zone A", "Processing Fac B"];
-const MOCK_AUDITORS = ["Jane Doe", "Alex Rivera", "Sarah Jenkins", "Michael Chang"];
+const MOCK_AUDITORS = ["Musa", "Muskan"];
 
 export default function AuditCyclesPage() {
   const [audits, setAudits] = useState<AuditCycle[]>(INITIAL_AUDITS);
