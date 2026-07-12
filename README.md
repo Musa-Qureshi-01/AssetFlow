@@ -31,6 +31,12 @@ graph TD
 | Dept_Head | Level 3 | Broadcast notifications, view department reports | Operations, Profile, Bookings, Transfers, Analytics |
 | Employee | Level 1 | Create bookings, log maintenance requests | Operations, Profile, Bookings, Maintenance, Transfers |
 
+## Database Design
+
+Below is the entity-relationship database structure mapping users, assets, categories, bookings, audit logs, and maintenance pipelines:
+
+![Database Design Schema](./db_schema.png)
+
 ## Services/Features/Module
 
 ### Operations Control Center (Dashboard)
@@ -60,11 +66,6 @@ Ingests operational records to compile summary statistics, identify high-vulnera
 ### Enterprise Hierarchy & Department Setup
 Configures the corporate reporting layout by mapping organizational divisions, department heads, and locations to manage permission gates.
 
-## Database Design
-
-Below is the entity-relationship database structure mapping users, assets, categories, bookings, audit logs, and maintenance pipelines:
-
-![Database Design Schema](./db_schema.png)
 
 ## Team Members
 
