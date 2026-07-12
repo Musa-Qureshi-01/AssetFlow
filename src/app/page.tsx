@@ -89,8 +89,14 @@ export default function Home() {
       </header>
 
       <main className="flex-1">
-        <section className="relative overflow-hidden border-b border-border/60 py-16 md:py-24">
+        <section className="relative overflow-hidden border-b border-border/60 py-20 md:py-28">
+          {/* Subtle modern radial background glow */}
+          <div className="pointer-events-none absolute inset-0 opacity-40"
+            style={{
+              backgroundImage: "radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.08) 0%, transparent 60%)",
+            }} />
           <div className="grid-bg pointer-events-none absolute inset-0 opacity-15" />
+          
           <div className="relative mx-auto flex max-w-4xl flex-col items-center gap-6 px-4 text-center sm:px-6">
             <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1 font-mono text-[11px] text-muted-foreground select-none">
               <span className="relative flex h-2 w-2">
@@ -100,9 +106,13 @@ export default function Home() {
               GLOBAL NETWORKS ONLINE (3/3 REGIONS)
             </div>
 
-            <h1 className="max-w-2xl text-3xl font-extrabold leading-tight tracking-tight text-foreground sm:text-4xl md:text-5xl">
+            <h1 className="max-w-2xl text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl md:text-6xl bg-gradient-to-r from-foreground via-foreground to-indigo-600 bg-clip-text text-transparent">
               Odoo Asset
             </h1>
+
+            <h2 className="max-w-xl text-lg font-bold tracking-tight text-foreground/80 sm:text-xl md:text-2xl -mt-2">
+              Next-Generation Hardware Control & Operations
+            </h2>
 
             <p className="max-w-xl text-sm leading-relaxed text-muted-foreground sm:text-base">
               Real-time telemetry streams, automated lifecycle procurement tracking,
@@ -111,7 +121,7 @@ export default function Home() {
 
             <div className="mt-2 flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
               <Link href="/auth/login" className="w-full sm:w-auto">
-                <Button className="w-full justify-center gap-1.5" size="md">
+                <Button className="w-full justify-center gap-1.5 shadow-md shadow-indigo-100 hover:shadow-indigo-200" size="md">
                   Access Terminal Gate <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
@@ -126,7 +136,7 @@ export default function Home() {
 
         <section
           id="capabilities"
-          className="border-b border-border/60 bg-muted/20 py-16 md:py-20"
+          className="border-b border-border/60 bg-muted/10 py-16 md:py-20"
         >
           <div className="mx-auto max-w-6xl px-4 sm:px-6">
             <div className="mb-10 flex flex-col gap-1.5 text-center md:text-left">
@@ -142,7 +152,7 @@ export default function Home() {
               {capabilities.map((item, idx) => (
                 <div
                   key={idx}
-                  className="flex flex-col gap-3 rounded-lg border border-border bg-background p-6 shadow-2xs transition-colors hover:border-zinc-300 dark:hover:border-zinc-800"
+                  className="flex flex-col gap-3 rounded-lg border border-border bg-background p-6 shadow-2xs transition-all duration-200 hover:border-indigo-200 hover:shadow-md hover:shadow-indigo-50/40"
                 >
                   <div className="flex h-10 w-10 items-center justify-center rounded bg-muted/65">
                     {item.icon}
