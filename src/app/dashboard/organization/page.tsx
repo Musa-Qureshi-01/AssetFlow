@@ -50,10 +50,10 @@ interface Employee {
 
 // Initial Mock Data
 const INITIAL_DEPARTMENTS: Department[] = [
-  { code: "ENG", name: "Engineering", head: "Jane Doe", parent: "Operations", status: "ACTIVE" },
-  { code: "LOG", name: "Logistics & Transport", head: "Bob Vance", parent: "Operations", status: "ACTIVE" },
-  { code: "FIN", name: "Finance & Accounting", head: "Alice Cole", parent: "Administration", status: "ACTIVE" },
-  { code: "HR", name: "Human Resources", head: "Mark Davis", parent: "Administration", status: "ACTIVE" },
+  { code: "ENG", name: "Engineering", head: "Aarav Mehta", parent: "Operations", status: "ACTIVE" },
+  { code: "LOG", name: "Logistics & Transport", head: "Chloe Dubois", parent: "Operations", status: "ACTIVE" },
+  { code: "FIN", name: "Finance & Accounting", head: "Elena Rossi", parent: "Administration", status: "ACTIVE" },
+  { code: "HR", name: "Human Resources", head: "Rajesh Kumar", parent: "Administration", status: "ACTIVE" },
   { code: "QA", name: "Quality Assurance", head: "None Assigned", parent: "Engineering", status: "DEACTIVATED" },
 ];
 
@@ -65,12 +65,12 @@ const INITIAL_CATEGORIES: AssetCategory[] = [
 ];
 
 const INITIAL_EMPLOYEES: Employee[] = [
-  { id: "EMP-0012", name: "Jane Doe", email: "jane.doe@company.com", department: "Engineering", role: "Admin", status: "ACTIVE" },
-  { id: "EMP-0921", name: "Mark Davis", email: "mark.davis@company.com", department: "Human Resources", role: "Head", status: "ACTIVE" },
-  { id: "EMP-1082", name: "John Green", email: "john.green@company.com", department: "Logistics & Transport", role: "Employee", status: "ACTIVE" },
-  { id: "EMP-1002", name: "Alice Cole", email: "alice.cole@company.com", department: "Finance & Accounting", role: "AssetManager", status: "ACTIVE" },
-  { id: "EMP-0881", name: "Bob Vance", email: "bob.vance@company.com", department: "Logistics & Transport", role: "Employee", status: "ACTIVE" },
-  { id: "EMP-0402", name: "Charlie Brown", email: "charlie.brown@company.com", department: "Quality Assurance", role: "Employee", status: "ACTIVE" },
+  { id: "EMP-0012", name: "Musa", email: "musaqureshi788code@gmail.com", department: "Engineering", role: "Admin", status: "ACTIVE" },
+  { id: "EMP-0921", name: "Rajesh Kumar", email: "rajesh.kumar@company.com", department: "Human Resources", role: "Head", status: "ACTIVE" },
+  { id: "EMP-1082", name: "Muskan", email: "kawadkarmuskan4@gmail.com", department: "Logistics & Transport", role: "Employee", status: "ACTIVE" },
+  { id: "EMP-1002", name: "Elena Rossi", email: "elena.rossi@company.com", department: "Finance & Accounting", role: "AssetManager", status: "ACTIVE" },
+  { id: "EMP-0881", name: "Chloe Dubois", email: "chloe.dubois@company.com", department: "Logistics & Transport", role: "Employee", status: "ACTIVE" },
+  { id: "EMP-0402", name: "Aarav Mehta", email: "aarav.mehta@company.com", department: "Quality Assurance", role: "Employee", status: "ACTIVE" },
 ];
 
 export default function OrganizationSetupPage() {
@@ -704,10 +704,10 @@ export default function OrganizationSetupPage() {
                             className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
                           >
                             <option value="None Assigned">None Assigned (Queue Vacant)</option>
-                            <option value="Jane Doe">Jane Doe (Engineering)</option>
-                            <option value="Bob Vance">Bob Vance (Logistics)</option>
-                            <option value="Alice Cole">Alice Cole (Finance)</option>
-                            <option value="Mark Davis">Mark Davis (HR)</option>
+                            <option value="Aarav Mehta">Aarav Mehta (Engineering)</option>
+                            <option value="Chloe Dubois">Chloe Dubois (Logistics)</option>
+                            <option value="Elena Rossi">Elena Rossi (Finance)</option>
+                            <option value="Rajesh Kumar">Rajesh Kumar (HR)</option>
                           </select>
                         </div>
 

@@ -21,18 +21,18 @@ import { Card, CardHeader, CardContent } from "@/components/ui/card";
 
 // Mock Data
 const OVERDUE_RETURNS = [
-  { id: "AF-902", name: "Caterpillar 320 Excavator", overdueDays: 3, custodian: "John Green (EMP-1082)", zone: "Depot Sector C", severity: "high" },
-  { id: "AF-405", name: "Cummins Power Generator", overdueDays: 2, custodian: "Mark Davis (EMP-0921)", zone: "Transit Zone A", severity: "medium" },
-  { id: "AF-112", name: "Hyster H190 Forklift", overdueDays: 1, custodian: "Alice Cole (EMP-1002)", zone: "Processing Fac B", severity: "low" },
+  { id: "AF-902", name: "Caterpillar 320 Excavator", overdueDays: 3, custodian: "Muskan (EMP-1082)", zone: "Depot Sector C", severity: "high" },
+  { id: "AF-405", name: "Cummins Power Generator", overdueDays: 2, custodian: "Rajesh Kumar (EMP-0921)", zone: "Transit Zone A", severity: "medium" },
+  { id: "AF-112", name: "Hyster H190 Forklift", overdueDays: 1, custodian: "Elena Rossi (EMP-1002)", zone: "Processing Fac B", severity: "low" },
 ];
 
 const INITIAL_ACTIVITIES = [
-  { time: "11:42", type: "allocation", desc: "Assigned Caterpillar Excavator (AF-902) to Sector C", asset: "AF-902", operator: "Jane Doe (EMP-0012)", status: "COMPLETED", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
-  { time: "10:15", type: "maintenance", desc: "Reported hydraulic leak on F-250 Truck (AF-302)", asset: "AF-302", operator: "Mark Davis (EMP-0921)", status: "IN INSPECTION", statusColor: "text-blue-500 bg-blue-500/5 border-blue-500/10" },
-  { time: "09:30", type: "registration", desc: "Registered new Mobile Generator (AF-084) at Depot 3", asset: "AF-084", operator: "Alice Cole (EMP-1002)", status: "ONLINE", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
-  { time: "08:12", type: "transfer", desc: "Dispatched Electric Pump (AF-502) to Sector B", asset: "AF-502", operator: "Bob Vance (EMP-0881)", status: "IN TRANSIT", statusColor: "text-amber-500 bg-amber-500/5 border-amber-500/10" },
-  { time: "07:45", type: "booking", desc: "Booked Precision Calibrator (AF-198) for July 15-18", asset: "AF-198", operator: "John Green (EMP-1082)", status: "SCHEDULED", statusColor: "text-indigo-500 bg-indigo-500/5 border-indigo-500/10" },
-  { time: "Yesterday", type: "maintenance", desc: "Completed routine inspection on Crane Node (AF-611)", asset: "AF-611", operator: "Jane Doe (EMP-0012)", status: "RESOLVED", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
+  { time: "11:42", type: "allocation", desc: "Assigned Caterpillar Excavator (AF-902) to Sector C", asset: "AF-902", operator: "Aarav Mehta (EMP-0402)", status: "COMPLETED", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
+  { time: "10:15", type: "maintenance", desc: "Reported hydraulic leak on F-250 Truck (AF-302)", asset: "AF-302", operator: "Rajesh Kumar (EMP-0921)", status: "IN INSPECTION", statusColor: "text-blue-500 bg-blue-500/5 border-blue-500/10" },
+  { time: "09:30", type: "registration", desc: "Registered new Mobile Generator (AF-084) at Depot 3", asset: "AF-084", operator: "Elena Rossi (EMP-1002)", status: "ONLINE", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
+  { time: "08:12", type: "transfer", desc: "Dispatched Electric Pump (AF-502) to Sector B", asset: "AF-502", operator: "Chloe Dubois (EMP-0881)", status: "IN TRANSIT", statusColor: "text-amber-500 bg-amber-500/5 border-amber-500/10" },
+  { time: "07:45", type: "booking", desc: "Booked Precision Calibrator (AF-198) for July 15-18", asset: "AF-198", operator: "Muskan (EMP-1082)", status: "SCHEDULED", statusColor: "text-indigo-500 bg-indigo-500/5 border-indigo-500/10" },
+  { time: "Yesterday", type: "maintenance", desc: "Completed routine inspection on Crane Node (AF-611)", asset: "AF-611", operator: "Musa (EMP-0012)", status: "RESOLVED", statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10" },
 ];
 
 export default function DashboardPage() {
@@ -155,9 +155,9 @@ export default function DashboardPage() {
       setSubmitSuccess(true);
       const newLog = {
         time: "Just Now",
-        type: "asset",
-        desc: `Registered asset ${regName} (${data.asset?.tag ?? regSerial}) at ${regDepot}`,
-        asset: data.asset?.tag ?? regSerial.substring(0, 6).toUpperCase(),
+        type: "registration",
+        desc: `Registered asset ${regName} (${regSerial}) at ${regDepot}`,
+        asset: regSerial.substring(0, 6).toUpperCase(),
         operator: "Jane Doe (EMP-0012)",
         status: "ONLINE",
         statusColor: "text-emerald-500 bg-emerald-500/5 border-emerald-500/10"
@@ -190,7 +190,7 @@ export default function DashboardPage() {
         type: "booking",
         desc: `Booked asset ${bookAsset} for employee ${bookEmpId}`,
         asset: bookAsset,
-        operator: "Jane Doe (EMP-0012)",
+        operator: "Musa (EMP-0012)",
         status: "SCHEDULED",
         statusColor: "text-indigo-500 bg-indigo-500/5 border-indigo-500/10"
       };
@@ -213,7 +213,7 @@ export default function DashboardPage() {
         type: "maintenance",
         desc: `Raised ${maintPriority} maintenance request for ${maintAsset}`,
         asset: maintAsset,
-        operator: "Jane Doe (EMP-0012)",
+        operator: "Musa (EMP-0012)",
         status: maintPriority === "Critical" ? "CRITICAL" : "QUEUED",
         statusColor: maintPriority === "Critical" 
           ? "text-red-500 bg-red-500/5 border-red-500/10" 

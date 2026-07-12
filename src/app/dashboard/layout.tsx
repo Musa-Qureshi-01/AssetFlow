@@ -18,10 +18,15 @@ import {
   Database,
   Layers,
   ClipboardCheck,
-  BarChart3
+  BarChart3,
+  Check,
+  CheckCheck,
+  Plus,
+  Trash2,
+  MailOpen,
+  Inbox
 } from "lucide-react";
 import Logo from "@/components/ui/logo";
-import { getCurrentUser, logoutUser, type AuthUser } from "@/services/auth";
 
 export default function DashboardLayout({
   children,
@@ -32,7 +37,6 @@ export default function DashboardLayout({
   const router = useRouter();
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [currentTime, setCurrentTime] = useState("");
-  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
 
   // Update clock in header to reflect standard live ERP monitoring
   useEffect(() => {
@@ -169,22 +173,17 @@ export default function DashboardLayout({
 
         {/* Sidebar Footer User Details */}
         <div className="p-4 border-t border-zinc-900 bg-zinc-900/10 flex items-center justify-between font-mono">
-          <div className="flex items-center gap-2.5">
+          <Link href="/dashboard/profile" className="flex items-center gap-2.5 hover:opacity-85 transition-opacity cursor-pointer">
             <div className="h-8 w-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-100 border border-zinc-700 shadow-sm">
               <User className="h-4 w-4 text-indigo-400" />
             </div>
             <div className="flex flex-col text-[10px]">
-              <span className="font-sans font-bold text-zinc-200 leading-tight">
-                {currentUser?.name ?? "Loading..."}
-              </span>
-              <span className="text-zinc-600 uppercase font-extrabold text-[9px]">
-                {currentUser?.role ?? "Session"}
-              </span>
+              <span className="font-sans font-bold text-zinc-200 leading-tight">Jane Doe</span>
+              <span className="text-zinc-600 uppercase font-extrabold text-[9px]">Sys_Admin</span>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={handleLogout}
+          <Link
+            href="/auth/login"
             title="Sign Out Session"
             className="text-zinc-600 hover:text-red-400 p-1.5 rounded transition-colors cursor-pointer border border-transparent hover:border-red-500/10 hover:bg-red-500/5"
           >
@@ -210,7 +209,7 @@ export default function DashboardLayout({
               </span>
               <span className="text-zinc-300 dark:text-zinc-700">/</span>
               <h1 className="text-sm font-bold text-foreground">
-                Operations Control
+                Odoo Asset
               </h1>
             </div>
           </div>
@@ -223,9 +222,16 @@ export default function DashboardLayout({
             </div>
 
             {/* Notification triggers */}
-            <button className="relative p-1.5 text-muted-foreground hover:text-foreground rounded border border-border bg-muted/20 cursor-pointer">
+            <button 
+              onClick={() => setIsNotificationsOpen(true)}
+              className="relative p-1.5 text-muted-foreground hover:text-foreground rounded border border-border bg-muted/20 cursor-pointer"
+            >
               <Bell className="h-4 w-4" />
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500 border border-background animate-pulse" />
+              {notifications.filter(n => !n.isRead).length > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white font-mono select-none">
+                  {notifications.filter(n => !n.isRead).length}
+                </span>
+              )}
             </button>
           </div>
         </header>
@@ -235,6 +241,332 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Notification Center Slide Drawer */}
+      <AnimatePresence>
+        {isNotificationsOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsNotificationsOpen(false)}
+              className="fixed inset-0 z-50 bg-zinc-950/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.28, ease: "easeInOut" }}
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col justify-between border-l border-border bg-background shadow-xl p-6 font-sans text-foreground"
+            >
+              <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                      Governance // Alert Desk
+                    </span>
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                      Notification Center
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setIsNotificationsOpen(false)}
+                    className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
+                  >
+                    <X className="h-4.5 w-4.5" />
+                  </button>
+                </div>
+
+                {/* Filters & Mark All Read bar */}
+                <div className="flex items-center justify-between select-none">
+                  <div className="flex items-center gap-1">
+                    {[
+                      { id: "all", label: "All" },
+                      { id: "unread", label: "Unread" },
+                      { id: "high", label: "High Priority" }
+                    ].map((btn, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setFilterType(btn.id as "all" | "unread" | "high")}
+                        className={`px-2.5 py-1.5 rounded text-[10px] font-mono font-bold transition-all border cursor-pointer ${
+                          filterType === btn.id
+                            ? "bg-primary border-primary text-primary-foreground"
+                            : "bg-background border-border text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {btn.label}
+                      </button>
+                    ))}
+                  </div>
+                  
+                  <button
+                    onClick={handleMarkAllRead}
+                    className="text-[10px] font-mono font-bold text-indigo-600 dark:text-indigo-400 hover:underline cursor-pointer flex items-center gap-1"
+                  >
+                    <CheckCheck className="h-3.5 w-3.5" /> Mark all read
+                  </button>
+                </div>
+
+                {/* Notification List Scroll Area */}
+                <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-3">
+                  {notifications
+                    .filter(n => {
+                      if (filterType === "unread") return !n.isRead;
+                      if (filterType === "high") return n.priority === "High";
+                      return true;
+                    })
+                    .length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-20 text-center text-muted-foreground gap-2 select-none">
+                        <Inbox className="h-8 w-8 text-zinc-400" />
+                        <span className="text-xs font-mono">No notifications logged.</span>
+                      </div>
+                    ) : (
+                      notifications
+                        .filter(n => {
+                          if (filterType === "unread") return !n.isRead;
+                          if (filterType === "high") return n.priority === "High";
+                          return true;
+                        })
+                        .map((item, idx) => (
+                          <div 
+                            key={idx} 
+                            className={`p-3.5 rounded border transition-colors relative flex flex-col gap-1 text-xs leading-normal ${
+                              item.isRead 
+                                ? "bg-muted/10 border-border/50 text-muted-foreground" 
+                                : "bg-indigo-500/[0.02] border-indigo-500/20 text-foreground font-medium shadow-2xs"
+                            }`}
+                          >
+                            {/* Unread Indicator dot */}
+                            {!item.isRead && (
+                              <div className="absolute top-3.5 right-3.5 h-1.5 w-1.5 rounded-full bg-indigo-500" />
+                            )}
+                            
+                            <div className="flex items-center gap-2 pr-4 flex-wrap">
+                              <span className="font-mono text-[9px] font-bold uppercase text-zinc-500">{item.category}</span>
+                              <span className="text-zinc-300 dark:text-zinc-700">|</span>
+                              <span className={`px-1.5 py-0.2 rounded font-mono text-[8px] font-bold border ${
+                                item.priority === "High"
+                                  ? "text-red-500 bg-red-500/5 border-red-500/10"
+                                  : item.priority === "Medium"
+                                  ? "text-amber-500 bg-amber-500/5 border-amber-500/10"
+                                  : "text-zinc-500 bg-muted border-border"
+                              }`}>{item.priority.toUpperCase()}</span>
+                            </div>
+
+                            <span className="font-bold text-foreground pr-4 mt-0.5">{item.title}</span>
+                            <p className="text-muted-foreground mt-0.5">{item.message}</p>
+                            
+                            <div className="flex items-center justify-between border-t border-border/40 pt-2 mt-1.5 text-[9px] font-mono text-zinc-500 select-none">
+                              <span>{item.timestamp}</span>
+                              <div className="flex items-center gap-3">
+                                {!item.isRead && (
+                                  <button
+                                    onClick={() => handleMarkRead(item.id)}
+                                    className="hover:text-indigo-500 flex items-center gap-0.5 cursor-pointer font-bold uppercase"
+                                  >
+                                    <MailOpen className="h-3 w-3" /> Mark read
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeleteNotif(item.id)}
+                                  className="hover:text-red-500 flex items-center gap-0.5 cursor-pointer font-bold uppercase"
+                                >
+                                  <Trash2 className="h-3 w-3" /> Delete
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Admin/Head compose triggers */}
+                <div className="border-t border-border pt-4">
+                  <Button 
+                    onClick={() => {
+                      setSaveSuccess(false);
+                      setIsComposeOpen(true);
+                    }}
+                    className="w-full gap-1.5 font-mono uppercase tracking-wider text-xs h-9"
+                  >
+                    <Plus className="h-4 w-4" /> Send Notification
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Compose Notification Drawer */}
+      <AnimatePresence>
+        {isComposeOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 0.5 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsComposeOpen(false)}
+              className="fixed inset-0 z-50 bg-zinc-950/60 backdrop-blur-xs"
+            />
+
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "tween", duration: 0.28, ease: "easeInOut" }}
+              className="fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col justify-between border-l border-border bg-background shadow-xl p-6 font-sans text-foreground"
+            >
+              <div className="flex flex-col gap-4 flex-1 overflow-hidden">
+                {/* Header */}
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-[9px] font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-400 uppercase">
+                      Admin Broadcasting console
+                    </span>
+                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider">
+                      Compose Notification
+                    </h3>
+                  </div>
+                  <button 
+                    onClick={() => setIsComposeOpen(false)}
+                    className="text-muted-foreground hover:text-foreground p-1 rounded hover:bg-muted cursor-pointer"
+                  >
+                    <X className="h-4.5 w-4.5" />
+                  </button>
+                </div>
+
+                <div className="flex-1 overflow-y-auto pr-1 py-4">
+                  {saveSuccess ? (
+                    <div className="flex flex-col items-center justify-center h-full text-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+                        <Check className="h-5 w-5 animate-bounce" />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-foreground">Broadcast Transmitted</h4>
+                        <p className="text-[11px] text-muted-foreground max-w-xs leading-relaxed">
+                          The notification has been queued and dispatched to target employee streams successfully.
+                        </p>
+                      </div>
+                      <Button onClick={() => setSaveSuccess(false)} size="sm" variant="outline" className="mt-2">
+                        Send Another
+                      </Button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleComposeSubmit} className="flex flex-col gap-4">
+                      {/* Recipient Scope */}
+                      <div className="flex flex-col gap-1.5 w-full select-none">
+                        <label className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                          Recipient Broadcast Scope
+                        </label>
+                        <select
+                          value={compScope}
+                          onChange={(e) => {
+                            const val = e.target.value as "All" | "Department" | "Employee";
+                            setCompScope(val);
+                            setCompScopeValue(val === "Department" ? MOCK_DEPARTMENTS[0] || "" : MOCK_EMPLOYEES[0] || "");
+                          }}
+                          className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
+                        >
+                          <option value="All">All Registered Staff (Broadcast)</option>
+                          <option value="Department">Department Scope</option>
+                          <option value="Employee">Specific Employee ID</option>
+                        </select>
+                      </div>
+
+                      {/* Scope values list */}
+                      {compScope !== "All" && (
+                        <div className="flex flex-col gap-1.5 w-full select-none">
+                          <label className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                            Select Recipient target
+                          </label>
+                          <select
+                            value={compScopeValue}
+                            onChange={(e) => setCompScopeValue(e.target.value)}
+                            className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden cursor-pointer focus:ring-1 focus:ring-ring focus:border-ring"
+                          >
+                            {compScope === "Department" ? (
+                              MOCK_DEPARTMENTS.map((d, idx) => <option key={idx} value={d}>{d}</option>)
+                            ) : (
+                              MOCK_EMPLOYEES.map((em, idx) => <option key={idx} value={em}>{em}</option>)
+                            )}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Title */}
+                      <Input 
+                        label="Notification Title"
+                        value={compTitle}
+                        onChange={(e) => setCompTitle(e.target.value)}
+                        placeholder="e.g. Schedule Maintenance Cycle Reminder"
+                        required
+                        disabled={isSaving}
+                      />
+
+                      {/* Message */}
+                      <div className="flex flex-col gap-1.5 w-full select-none">
+                        <label className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                          Broadcast Message content
+                        </label>
+                        <textarea
+                          value={compMsg}
+                          onChange={(e) => setCompMsg(e.target.value)}
+                          rows={4}
+                          placeholder="Provide the notification body content here..."
+                          required
+                          disabled={isSaving}
+                          className="w-full text-sm py-2 px-3 rounded border border-border bg-background text-foreground transition-all duration-150 outline-hidden focus:ring-1 focus:ring-ring focus:border-ring resize-none"
+                        />
+                      </div>
+
+                      {/* Priority */}
+                      <div className="flex flex-col gap-1.5 w-full select-none">
+                        <label className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
+                          Priority Urgency
+                        </label>
+                        <div className="grid grid-cols-3 gap-2">
+                          {(["Low", "Medium", "High"] as const).map((p, idx) => (
+                            <button
+                              type="button"
+                              key={idx}
+                              onClick={() => setCompPriority(p)}
+                              className={`py-2 rounded font-mono font-bold text-[10px] border transition-all cursor-pointer text-center ${
+                                compPriority === p
+                                  ? p === "High"
+                                    ? "bg-red-500/10 border-red-500 text-red-500"
+                                    : p === "Medium"
+                                    ? "bg-amber-500/10 border-amber-500 text-amber-500"
+                                    : "bg-indigo-500/10 border-indigo-500 text-indigo-600 dark:text-indigo-400"
+                                  : "bg-background border-border text-muted-foreground hover:bg-muted"
+                              }`}
+                            >
+                              {p}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <Button type="submit" className="w-full mt-4" isLoading={isSaving}>
+                        Transmit Broadcast
+                      </Button>
+                    </form>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="border-t border-border pt-4 text-[10px] font-mono text-muted-foreground flex justify-between select-none">
+                <span>SECURED COMS CHANNELS</span>
+                <span>OD00 ASSET // GOVERN</span>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

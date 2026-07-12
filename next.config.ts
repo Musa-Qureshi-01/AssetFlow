@@ -1,9 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  turbopack: {
-    root: __dirname,
-  },
+  // turbopack: {
+  //   root: __dirname,
+  // },
 
   async rewrites() {
     const authServiceUrl = process.env.AUTH_SERVICE_URL || "http://localhost:5000";

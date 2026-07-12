@@ -174,7 +174,7 @@ export default function SignupPage() {
               type="text"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Jane Doe"
+              placeholder="Musa"
               error={errors.fullName}
               leftIcon={<User className="h-4 w-4" />}
               required
@@ -214,7 +214,7 @@ export default function SignupPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="jane.doe@company.com"
+              placeholder="musaqureshi788code@gmail.com"
               error={errors.email}
               leftIcon={<Mail className="h-4 w-4" />}
               required

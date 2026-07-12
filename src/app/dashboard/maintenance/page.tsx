@@ -45,10 +45,10 @@ const INITIAL_TICKETS: MaintenanceTicket[] = [
     assetName: "Caterpillar 320 Excavator",
     issue: "Hydraulic fluid leak on primary lift cylinders",
     priority: "Critical",
-    requester: "John Green",
+    requester: "Muskan",
     loggedTime: "2 hours ago",
     stage: "Pending",
-    history: ["Logged by Operator John Green // 2 hours ago"]
+    history: ["Logged by Operator Muskan // 2 hours ago"]
   },
   {
     id: "WO-802",
@@ -56,13 +56,13 @@ const INITIAL_TICKETS: MaintenanceTicket[] = [
     assetName: "Cummins Power Generator",
     issue: "Radiator fluid temperature spike under load tests",
     priority: "Urgent",
-    requester: "Mark Davis",
+    requester: "Rajesh Kumar",
     loggedTime: "5 hours ago",
     stage: "Tech Assigned",
     technician: "Alex Rivera",
     history: [
-      "Logged by Operator Mark Davis // 5 hours ago",
-      "Authorized by Admin Jane Doe // 4 hours ago",
+      "Logged by Operator Rajesh Kumar // 5 hours ago",
+      "Authorized by Admin Aarav Mehta // 4 hours ago",
       "Technician Alex Rivera assigned // 3 hours ago"
     ]
   },
@@ -72,13 +72,13 @@ const INITIAL_TICKETS: MaintenanceTicket[] = [
     assetName: "Precision Multi-Meter Box",
     issue: "NIST calibration certification lookup failed",
     priority: "Standard",
-    requester: "Charlie Brown",
+    requester: "Chloe Dubois",
     loggedTime: "1 day ago",
     stage: "In Progress",
     technician: "Sarah Jenkins",
     history: [
-      "Logged by Operator Charlie Brown // 1 day ago",
-      "Authorized by Admin Jane Doe // 18 hours ago",
+      "Logged by Operator Chloe Dubois // 1 day ago",
+      "Authorized by Admin Aarav Mehta // 18 hours ago",
       "Technician Sarah Jenkins assigned // 16 hours ago",
       "Repair work initiated by Sarah Jenkins // 4 hours ago"
     ]
@@ -89,14 +89,14 @@ const INITIAL_TICKETS: MaintenanceTicket[] = [
     assetName: "Hyster H190 Forklift",
     issue: "Scheduled engine oil change and safety review",
     priority: "Standard",
-    requester: "Bob Vance",
+    requester: "Musa",
     loggedTime: "2 days ago",
     stage: "Resolved",
     technician: "Michael Chang",
     notes: "Oil replaced. All lift sensors inspected and passed guidelines.",
     history: [
-      "Logged by Operator Bob Vance // 2 days ago",
-      "Authorized by Admin Jane Doe // 2 days ago",
+      "Logged by Operator Musa // 2 days ago",
+      "Authorized by Admin Musa // 2 days ago",
       "Technician Michael Chang assigned // 1 day ago",
       "Repair work initiated by Michael Chang // 1 day ago",
       "Marked resolved by Michael Chang // 4 hours ago"
@@ -213,11 +213,22 @@ export default function MaintenanceLogsPage() {
 
       setIsSaving(false);
       setSaveSuccess(true);
-      setTickets((currentTickets) => [data.ticket, ...currentTickets]);
-    } catch (error) {
-      setIsSaving(false);
-      setErrors({ submit: error instanceof Error ? error.message : "Ticket creation failed" });
-    }
+
+      const targetAsset = MOCK_ASSETS.find(a => a.tag === reqAssetTag) || MOCK_ASSETS[0];
+      const newTicket: MaintenanceTicket = {
+        id: `WO-${Math.floor(805 + Math.random() * 95)}`,
+        tag: reqAssetTag,
+        assetName: targetAsset.name,
+        issue: reqIssue,
+        priority: reqPriority,
+        requester: "Jane Doe",
+        loggedTime: "Just logged",
+        stage: "Pending",
+        history: ["Logged by Operator Jane Doe // Just logged"]
+      };
+
+      setTickets([newTicket, ...tickets]);
+    }, 1200);
   };
 
   // Lifecycle transition handlers (simulated in state)
@@ -231,7 +242,7 @@ export default function MaintenanceLogsPage() {
       setTickets(tickets.map(t => t.id === selectedTicket.id ? { 
         ...t, 
         stage: "Approved", 
-        history: [...t.history, "Authorized by Admin Jane Doe // Just now"] 
+        history: [...t.history, "Authorized by Admin Musa // Just now"] 
       } : t));
     }, 800);
   };

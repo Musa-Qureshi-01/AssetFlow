@@ -58,7 +58,7 @@ const INITIAL_BOOKINGS: Booking[] = [
     id: "B-201",
     resourceId: "RES-001",
     title: "Engineering Daily Sync",
-    organizer: "Jane Doe",
+    organizer: "Musa",
     date: "2026-07-12",
     startTime: "10:00",
     endTime: "11:30",
@@ -68,7 +68,7 @@ const INITIAL_BOOKINGS: Booking[] = [
     id: "B-202",
     resourceId: "RES-002",
     title: "Route B Sync Shipment",
-    organizer: "Bob Vance",
+    organizer: "Chloe Dubois",
     date: "2026-07-12",
     startTime: "13:00",
     endTime: "17:00",
@@ -80,7 +80,7 @@ const INITIAL_BOOKINGS: Booking[] = [
     id: "B-203",
     resourceId: "RES-003",
     title: "Sensor Calibration Tests",
-    organizer: "Charlie Brown",
+    organizer: "Aarav Mehta",
     date: "2026-07-12",
     startTime: "09:00",
     endTime: "11:00",
@@ -90,7 +90,7 @@ const INITIAL_BOOKINGS: Booking[] = [
     id: "B-204",
     resourceId: "RES-001",
     title: "Weekly QA Architecture Review",
-    organizer: "Charlie Brown",
+    organizer: "Elena Rossi",
     date: "2026-07-12",
     startTime: "14:00",
     endTime: "15:30",
@@ -100,7 +100,7 @@ const INITIAL_BOOKINGS: Booking[] = [
     id: "B-205",
     resourceId: "RES-004",
     title: "Shift Warehouse Restock",
-    organizer: "John Green",
+    organizer: "Muskan",
     date: "2026-07-12",
     startTime: "08:00",
     endTime: "10:00",
@@ -575,7 +575,7 @@ export default function BookingsPage() {
                           label="Organizer Full Name"
                           value={bookOrganizer}
                           onChange={(e) => setBookOrganizer(e.target.value)}
-                          placeholder="e.g. Jane Doe"
+                          placeholder="e.g. Musa"
                           error={errors.organizer}
                           required
                           disabled={isSaving}
