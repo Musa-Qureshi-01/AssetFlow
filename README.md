@@ -2,12 +2,6 @@
 
 Odoo Asset Flow is an enterprise-grade hardware lifecycle coordination and telemetry management deck built specifically for the Odoo Hackathon.
 
-## Team Members
-
-| Name | Email | LinkedIn |
-| :--- | :--- | :--- |
-| Musa Qureshi | musaqureshi788code@gmail.com | [LinkedIn Profile](https://www.linkedin.com/in/musa-qureshi-01) |
-| Muskan Kawadkar | kawadkarmuskan4@gmail.com | [LinkedIn Profile](https://www.linkedin.com/in/muskan-kawadkar) |
 
 ## Authentication Architecture
 
@@ -37,7 +31,7 @@ graph TD
 | Dept_Head | Level 3 | Broadcast notifications, view department reports | Operations, Profile, Bookings, Transfers, Analytics |
 | Employee | Level 1 | Create bookings, log maintenance requests | Operations, Profile, Bookings, Maintenance, Transfers |
 
-## services/features/Module
+## Services/Features/Module
 
 ### Operations Control Center (Dashboard)
 A real-time overview hub showing key telemetry streams, upcoming returns, critical maintenance alerts, and active server health shards. Allows operators to monitor ongoing operations in one centralized screen.
@@ -71,6 +65,14 @@ Configures the corporate reporting layout by mapping organizational divisions, d
 Below is the entity-relationship database structure mapping users, assets, categories, bookings, audit logs, and maintenance pipelines:
 
 ![Database Design Schema](./db_schema.png)
+
+## Team Members
+
+| Name | Email | LinkedIn |
+| :--- | :--- | :--- |
+| Musa Qureshi | musaqureshi788code@gmail.com | [LinkedIn Profile](https://www.linkedin.com/in/musa-qureshi-01) |
+| Muskan Kawadkar | kawadkarmuskan4@gmail.com | [LinkedIn Profile](https://www.linkedin.com/in/muskan-kawadkar) |
+
 
 ## Conclusion
 This modular and highly-scalable database-decoupled architecture allows rapid enterprise deployment while keeping critical telemetry and hardware operations online even during system failures.
